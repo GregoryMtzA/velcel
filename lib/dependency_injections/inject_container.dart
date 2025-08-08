@@ -41,8 +41,6 @@ Future<void> injectContainer() async {
   //   db: dotenv.env['DB_PROD']!,
   // );
 
-  print(dotenv.env['PASSWORD_TEST']!);
-
   ///PRUEBAS
   ConnectionSettings settings = new ConnectionSettings(
     host: dotenv.env['HOST']!,
