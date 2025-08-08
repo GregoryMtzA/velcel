@@ -2,10 +2,12 @@ import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:velcel/core/app/dialogs.dart';
 import 'package:velcel/core/app/snackbars.dart';
 import 'package:velcel/core/app/theme.dart';
 import 'package:velcel/features/auth/presentation/providers/branch_provider.dart';
 import 'package:velcel/features/auth/presentation/providers/user_provider.dart';
+import 'package:velcel/features/config/presentation/controllers/printers_controller.dart';
 import 'package:velcel/features/store/domain/entities/cart_method_pay.dart';
 import 'package:velcel/features/store/domain/entities/cart_payment_type.dart';
 import 'package:velcel/features/store/presentation/providers/cash_register_provider.dart';
@@ -143,9 +145,35 @@ class CartPageWidget extends StatelessWidget {
                         return ;
                       }
 
+
+                      BranchProvider branchProvider = context.read();
+                      if (branchProvider.branch!.nombre == "VELCEL AVENTA") {
+                        PrintersControllers printersController = context.read();
+                        Either<String, void> printerResponse = await printersController.checkStatusConnect();
+                        bool isContinue = true;
+                        await printerResponse.fold(
+                              (l) async {
+                            bool result = await DialogService.awaitConfirmDialog(
+                              context: context,
+                              title: "No hay una impresora conectada",
+                              textButton: "Continuar",
+                            );
+
+                            if (!result) {
+                              isContinue = false;
+                            }
+                          },
+                              (r) {},
+                        );
+
+                        if (!isContinue) {
+                          SnackbarService.showIncorrect(context, "Venta", "Configura tu impresora");
+                          return;
+                        }
+                      }
+
                       CashRegisterProvider cashRegisterProvider = context.read();
                       UserProvider userProvider = context.read();
-                      BranchProvider branchProvider = context.read();
 
                       if (cartState.cartMethodPayEntity == null){
                         SnackbarService.showIncorrect(context, "Tipo de Pago", "Selecciona un tipo de pago");

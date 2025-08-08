@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:velcel/features/config/domain/repositories/printer_repository_interface.dart';
 import 'package:velcel/features/store/domain/entities/cart_entity.dart';
 import 'package:velcel/features/store/domain/entities/cart_method_pay.dart';
 import 'package:velcel/features/store/domain/entities/product_entity.dart';
@@ -22,9 +25,11 @@ import '../../../../domain/entities/cart_payment_type.dart';
 class CartState extends ChangeNotifier {
 
   ProductsRepository productRepository;
+  PrinterRepositoryInterface printerRepository;
 
   CartState({
     required this.productRepository,
+    required this.printerRepository
   });
 
   final formKeyValidate = GlobalKey<FormState>();
@@ -241,7 +246,22 @@ class CartState extends ChangeNotifier {
           paguitos: cartPaymentType!.enumType == PaymentTypes.paguitos ? true : false
         );
         // Guardar Ticket
-        await generarPdfTicketVenta(ticketEntity);
+        Uint8List ticketPdf = await generarPdfTicketVenta(ticketEntity);
+
+        if (sucursal == "VELCEL AVENTA") {
+          // Imprimir ticket
+          final result = await printerRepository.printPdf(ticketEntity);
+          result.fold(
+                (l) {
+              print("HUBO FALLO EN LA IMPRESION");
+              print(l);
+            },
+                (r) {
+              print("HUBO EXITO EN LA IMPRESION");
+              print(r);
+            },
+          );
+        }
         // limpiar carrito y notificar
         clearAll();
         // retornar mensaje de éxito

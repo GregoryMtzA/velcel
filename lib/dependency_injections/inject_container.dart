@@ -4,11 +4,14 @@ import 'dart:typed_data';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mysql1/mysql1.dart';
+import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:velcel/features/auth/data/repositories/branch_repository_impl.dart';
 import 'package:velcel/features/auth/data/repositories/user_repository_impl.dart';
 import 'package:velcel/features/auth/domain/repositories/branch_repository.dart';
 import 'package:velcel/features/auth/domain/repositories/user_repository.dart';
+import 'package:velcel/features/config/data/repositories/printer_repository_impl.dart';
+import 'package:velcel/features/config/domain/repositories/printer_repository_interface.dart';
 import 'package:velcel/features/gastos/data/repositories/gastos_repository_impl.dart';
 import 'package:velcel/features/gastos/domain/repositories/gastos_repository.dart';
 import 'package:velcel/features/gastos/domain/usecases/crear_gasto_usecase.dart';
@@ -60,6 +63,7 @@ Future<void> injectContainer() async {
 
   /// PRODUCTS REPOSITORY
   locator.registerLazySingleton<ProductsRepository>(() => ProductsRepositoryImpl(createConnection: locator()),);
+  locator.registerLazySingleton<PrinterRepositoryInterface>(() => PrinterRepositoryImpl(sharedPreferences: locator()));
   locator.registerLazySingleton<InventoryRepository>(() => InventoryRepositoryImpl(createConnection: locator()),);
   locator.registerLazySingleton<VentasRepository>(() => VentasRepositoryImpl(createConnection: locator()),);
   locator.registerLazySingleton<GastosRepository>(() => GastosRepositoryImpl(createConnection: locator()),);

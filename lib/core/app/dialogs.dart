@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:velcel/features/widgets/dialogs/await_confirm_dialog.dart';
 import 'package:velcel/features/widgets/dialogs/info_dialog.dart';
 
 import '../../features/widgets/dialogs/confirm_dialog.dart';
@@ -18,6 +19,30 @@ class DialogService {
         onAccept: onAccept,
       ),
     );
+  }
+
+  static Future<bool> awaitConfirmDialog({
+    required BuildContext context,
+    required String title,
+    required String textButton,
+  }) async {
+    // 1️⃣ Lanza el diálogo y espera su resultado (true, false o null)
+    final bool? result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AwaitConfirmDialog(
+        title: title,
+        textButton: textButton,
+      ),
+    );
+
+    // 2️⃣ Si result es true, ejecuta onAccept y devuelve true
+    if (result == true) {
+      return true;
+    }
+
+    // 3️⃣ En cualquier otro caso (false o null), no hace nada y devuelve false
+    return false;
   }
 
   static void infoDialog({required BuildContext context, required String title, required String text, bool barrierDismissible = true, required String backButtonText,

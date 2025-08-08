@@ -6,6 +6,7 @@ import 'package:velcel/dependency_injections/inject_container.dart';
 import 'package:velcel/features/auth/presentation/providers/branch_provider.dart';
 import 'package:velcel/features/auth/presentation/providers/user_provider.dart';
 import 'package:velcel/features/auth/presentation/screens/splash_screen/splash_screen.dart';
+import 'package:velcel/features/config/presentation/controllers/printers_controller.dart';
 import 'package:velcel/features/gastos/presentation/providers/gastos_provider.dart';
 import 'package:velcel/features/inventory/presentation/providers/inventory_provider.dart';
 import 'package:velcel/features/services/presentation/providers/services_provider.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CashRegisterProvider(cashRegisterRepository: locator()),),
+        ChangeNotifierProvider(create: (context) => PrintersControllers(repository: locator()),),
         ChangeNotifierProvider(create: (context) => GastosProvider(gastosRepository: locator(), crearGastoUsecase: locator()),),
         ChangeNotifierProvider(create: (context) => VentasProvider(ventasRepository: locator(), getDetailReportWithFolioUsecase: locator()),),
         ChangeNotifierProvider(create: (context) => BranchProvider(branchRepository: locator()),),

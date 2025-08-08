@@ -101,17 +101,18 @@ class MenuDrawer extends StatelessWidget {
 
                   const SizedBox(height: 10,),
 
-                  // ListTile(
-                  //   tileColor: IsselColors.grisClaro,
-                  //   title: Row(
-                  //     children: [
-                  //       Icon(Icons.payment_outlined),
-                  //       const SizedBox(width: 10,),
-                  //       Text("Configuración")
-                  //     ],
-                  //   ),
-                  //   onTap: () => NavigationService.navigateTo(context, ConfigScreen()),
-                  // ),
+                  if (branchProvider.branch!.nombre == "VELCEL AVENTA")
+                  ListTile(
+                    tileColor: IsselColors.grisClaro,
+                    title: Row(
+                      children: [
+                        Icon(Icons.payment_outlined),
+                        const SizedBox(width: 10,),
+                        Text("Configuración")
+                      ],
+                    ),
+                    onTap: () => NavigationService.navigateTo(context, ConfigScreen()),
+                  ),
 
                 ],
               ),
