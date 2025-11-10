@@ -57,25 +57,38 @@ class InventoryRepositoryImpl implements InventoryRepository {
   Future<Either<Failure, List<ProductInventoryEntity>>> getProducts(String sucursal) async {
     final mysql = await createConnection();
 
-    print("OBENTIENDO PRODUCTOS");
     try {
 
-      List<ProductInventoryEntity> products = [];
+      final List<ProductInventoryEntity> products = [];
+      int offset = 0;
+      const int limit = 100;
 
-      Results results = await mysql.query(
-        '''
-        SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
+      while (true) {
+
+        Results results = await mysql.query(
+          '''
+            SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
             FROM productos p
             JOIN almacenaje a ON p.nombre = a.nombre
             WHERE a.sucursal = ?
-            ORDER BY p.categoria
-        ''',
-        [sucursal]
-      );
+            LIMIT ?, ?
+          ''',
+          [sucursal, offset, limit],
+        );
 
-      for (var result in results){
-        ProductInventoryEntity product = ProductInventoryModel.fromJson(result.fields);
-        products.add(product);
+        if (results.isEmpty) break;
+
+        for (var row in results) {
+          final product = ProductInventoryModel.fromJson(row.fields);
+          products.add(product);
+        }
+
+        // Si trajo menos que el límite, ya no hay más datos
+        if (results.length < limit) {
+          break;
+        }
+
+        offset += limit; // avanzar al siguiente bloque
       }
 
       return Right(products);
