@@ -47,7 +47,7 @@ class CartVerify extends StatelessWidget {
                     if (cartState.cartPaymentType != null)
                       VerifyImeisWidget(),
 
-                    // const SizedBox(height: 50,)
+                    const SizedBox(height: 50,)
 
                   ],
                 ),

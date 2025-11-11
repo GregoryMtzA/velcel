@@ -34,20 +34,20 @@ GetIt locator = GetIt.instance;
 Future<void> injectContainer() async {
   await dotenv.load(fileName: '.env');
   /// GENERALES
-  var settings = new ConnectionSettings(
-    host: dotenv.env['HOST']!,
-    user: dotenv.env['USER_PROD']!,
-    password: dotenv.env['PASSWORD_PROD']!,
-    db: dotenv.env['DB_PROD']!,
-  );
+  // var settings = new ConnectionSettings(
+  //   host: dotenv.env['HOST']!,
+  //   user: dotenv.env['USER_PROD']!,
+  //   password: dotenv.env['PASSWORD_PROD']!,
+  //   db: dotenv.env['DB_PROD']!,
+  // );
 
   ///PRUEBAS
-  // ConnectionSettings settings = new ConnectionSettings(
-  //   host: dotenv.env['HOST']!,
-  //   user: dotenv.env['USER_TEST']!,
-  //   password: dotenv.env['PASSWORD_TEST']!,
-  //   db: dotenv.env['DB_TEST']!,
-  // );
+  ConnectionSettings settings = new ConnectionSettings(
+    host: dotenv.env['HOST']!,
+    user: dotenv.env['USER_TEST']!,
+    password: dotenv.env['PASSWORD_TEST']!,
+    db: dotenv.env['DB_TEST']!,
+  );
 
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
