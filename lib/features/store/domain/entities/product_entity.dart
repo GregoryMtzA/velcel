@@ -21,5 +21,5 @@ class ProductEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, description, price, image, rimei]; // Actualización de props
+  List<Object?> get props => [name, description, price, rimei]; // Actualización de props
 }

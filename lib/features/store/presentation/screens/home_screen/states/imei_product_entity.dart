@@ -16,7 +16,6 @@ class ImeiProductEntity extends Equatable {
   });
 
   @override
-  // TODO: implement props
-  List<Object?> get props => [cartProductEntity, imeiController, error];
+  List<Object?> get props => [cartProductEntity, error];
 
 }

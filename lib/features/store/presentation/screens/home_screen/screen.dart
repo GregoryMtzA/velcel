@@ -40,14 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
     PrintersControllers printersControllers = context.read();
     BranchProvider branchProvider = context.read();
 
+    // TODO: LIBERAR IMPRESIONES
     if (branchProvider.branch!.nombre == "VELCEL AVENTA") {
     WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((timeStamp) {
       printersControllers.checkStatusConnect().then((value) {
         value.fold(
-              (l) {
+          (l) {
             SnackbarService.showIncorrect(context, "Impresora", l);
           },
-              (r) {
+          (r) {
             SnackbarService.showCorrect(context, "Impresora", "¡Conectada!");
           },
         );
@@ -62,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       drawer: MenuDrawer(),
       body: SafeArea(
         child: Row(

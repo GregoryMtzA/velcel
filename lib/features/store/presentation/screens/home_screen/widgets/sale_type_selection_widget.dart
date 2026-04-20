@@ -23,13 +23,12 @@ class SaleTypeSelectionWidget extends StatelessWidget {
         hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
         headerStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
         closedSuffixIcon: const Icon(Icons.keyboard_arrow_down, color: Colors.white,),
-
       ),
       initialItem: cartState.cartPaymentType,
       validateOnChange: true,
       items: cartPaymentTypes,
       validator: (value) {
-        if (value != null && (value as CartPaymentTypeEntity).enumType == PaymentTypes.paguitos && !cartState.applyForPaguitos()){
+        if (value != null && (value as CartPaymentTypeEntity).enumType != PaymentTypes.normal && !cartState.applyForPaguitos()){
           return "Solo se permite un celular";
         }
       },
@@ -40,11 +39,11 @@ class SaleTypeSelectionWidget extends StatelessWidget {
           return ;
         }
 
-        if ((value as CartPaymentTypeEntity).enumType == PaymentTypes.paguitos && !cartState.applyForPaguitos()){
+        if ((value as CartPaymentTypeEntity).enumType != PaymentTypes.normal && !cartState.applyForPaguitos()){
           SnackbarService.showIncorrect(
-              context,
-              "Paguitos",
-              "Solo se permite un celular"
+            context,
+            "Paguitos",
+            "Solo se permite un celular"
           );
           cartState.cartPaymentType = null;
         } else {

@@ -133,6 +133,7 @@ class CartState extends ChangeNotifier {
         },
         (boolValue) {
 
+
           if (boolValue) {
 
             int index = cart.indexOf(imeiProductEntity.cartProductEntity);
@@ -217,18 +218,18 @@ class CartState extends ChangeNotifier {
   Future<Either<String, String>> purchase(idCorte, usuario, sucursal) async {
 
     VentaRequest ventaRequest = VentaRequest(
-      total: cartPaymentType!.enumType == PaymentTypes.paguitos ? double.parse(creditEnchangeController.text) : total,
+      total: cartPaymentType!.enumType != PaymentTypes.normal ? double.parse(creditEnchangeController.text) : total,
       metodo: _cartMethodPayEntity!.name,
       sucursal: sucursal,
       usuario: usuario,
       idCorte: idCorte,
-      credito: cartPaymentType!.enumType == PaymentTypes.paguitos ? cartPaymentType!.name : "No",
+      credito: cartPaymentType!.enumType != PaymentTypes.normal ? cartPaymentType!.name : "No",
       nombres: cart.map((e) => e.product.name,).toList(),
       cantidades: cart.map((e) => e.quantity,).toList(),
       imeis: cart.expand((element) => element.imeiList,).toList(),
-      nombreC: cartPaymentType!.enumType == PaymentTypes.paguitos ? creditNameController.text : null,
-      telefonoC: cartPaymentType!.enumType == PaymentTypes.paguitos ? creditPhoneController.text : null,
-      domicilioC: cartPaymentType!.enumType == PaymentTypes.paguitos ? creditAddressController.text : null,
+      nombreC: cartPaymentType!.enumType != PaymentTypes.normal ? creditNameController.text : null,
+      telefonoC: cartPaymentType!.enumType != PaymentTypes.normal ? creditPhoneController.text : null,
+      domicilioC: cartPaymentType!.enumType != PaymentTypes.normal ? creditAddressController.text : null,
     );
 
     Either<Failure,VentaResponse> usecase = await productRepository.generarVenta(ventaRequest);
@@ -239,24 +240,25 @@ class CartState extends ChangeNotifier {
         // Generar entidad de ticket
         TicketEntity ticketEntity = TicketEntity(
           sucursal: sucursal,
-          total: cartPaymentType!.enumType == PaymentTypes.paguitos ? double.parse(creditEnchangeController.text) : total,
+          total: cartPaymentType!.enumType != PaymentTypes.normal ? double.parse(creditEnchangeController.text) : total,
           ventaResponse: ventaResponse,
           cart: cart,
           supplierName: usuario,
-          paguitos: cartPaymentType!.enumType == PaymentTypes.paguitos ? true : false
+          paguitos: cartPaymentType!.enumType != PaymentTypes.normal ? true : false
         );
         // Guardar Ticket
         Uint8List ticketPdf = await generarPdfTicketVenta(ticketEntity);
 
+        // TODO: LIBERAR IMPRESIONES
         if (sucursal == "VELCEL AVENTA") {
           // Imprimir ticket
           final result = await printerRepository.printPdf(ticketEntity);
           result.fold(
-                (l) {
+            (l) {
               print("HUBO FALLO EN LA IMPRESION");
               print(l);
             },
-                (r) {
+            (r) {
               print("HUBO EXITO EN LA IMPRESION");
               print(r);
             },

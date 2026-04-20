@@ -7,6 +7,7 @@ enum CartStates {
 enum PaymentTypes {
   normal,
   paguitos,
+  tarifario
 }
 
 enum MethodPay {

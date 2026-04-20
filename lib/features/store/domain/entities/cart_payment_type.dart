@@ -26,5 +26,6 @@ List<CartPaymentTypeEntity> cartPaymentTypes = [
 
   const CartPaymentTypeEntity(name: "Normal", enumType: PaymentTypes.normal),
   const CartPaymentTypeEntity(name: "Paguitos", enumType: PaymentTypes.paguitos),
+  const CartPaymentTypeEntity(name: "Tarifario", enumType: PaymentTypes.tarifario),
 
 ];

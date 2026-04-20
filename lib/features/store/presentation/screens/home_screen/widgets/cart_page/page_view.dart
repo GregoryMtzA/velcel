@@ -145,8 +145,8 @@ class CartPageWidget extends StatelessWidget {
                         return ;
                       }
 
-
                       BranchProvider branchProvider = context.read();
+                      // TODO: LIBERAR IMPRESIONES
                       if (branchProvider.branch!.nombre == "VELCEL AVENTA") {
                         PrintersControllers printersController = context.read();
                         Either<String, void> printerResponse = await printersController.checkStatusConnect();
@@ -163,7 +163,7 @@ class CartPageWidget extends StatelessWidget {
                               isContinue = false;
                             }
                           },
-                              (r) {},
+                          (r) {},
                         );
 
                         if (!isContinue) {

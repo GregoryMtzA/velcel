@@ -46,7 +46,9 @@ class BranchProvider extends ChangeNotifier {
     Either<Failure, List<BranchEntity>> usecase = await branchRepository.getAllBranchs();
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) {
+        return Left( (l as ServerFailure).message );
+      },
       (newBranchs) {
         allBranchs = newBranchs;
         notifyListeners();

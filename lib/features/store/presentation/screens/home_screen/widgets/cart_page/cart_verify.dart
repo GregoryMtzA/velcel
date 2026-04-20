@@ -64,18 +64,21 @@ class CartVerify extends StatelessWidget {
                 borderRadius: 0,
                 onTap: () async {
 
-                  await cartState.verifyImei();
-
+                  // Validación del tipo de pago
                   if (cartState.cartPaymentType == null){
                     SnackbarService.showIncorrect(context, "Tipo de Venta", "Selecciona un tipo de venta");
                     return ;
                   }
 
-                  if (cartState.cartPaymentType!.enumType == PaymentTypes.paguitos && !cartState.creditFormKey.currentState!.validate()){
-                    print("hola");
+                  // Validación de formulario de credito
+                  if (cartState.cartPaymentType!.enumType != PaymentTypes.normal && !cartState.creditFormKey.currentState!.validate()){
                     return ;
                   }
 
+                  // Validación de IMEI´S
+                  await cartState.verifyImei();
+
+                  // Validación de formulario de IMEI´S - Se complementa con la validación de IMEI´S
                   if (!cartState.formKeyValidate.currentState!.validate()){
                     cartState.notifyListeners();
                     FocusScope.of(context).unfocus();
@@ -84,7 +87,6 @@ class CartVerify extends StatelessWidget {
 
                   cartState.cartState = CartStates.purchase;
                   FocusScope.of(context).unfocus();
-
 
                 },
               )

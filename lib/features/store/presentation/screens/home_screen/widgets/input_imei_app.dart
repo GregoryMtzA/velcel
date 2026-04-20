@@ -28,9 +28,10 @@ class InputImeiApp extends StatelessWidget {
 
             List<ImeiProductEntity> imeis = cartState.imeiProductEntitiesCart.where((element) => element.imeiController.text == imeiProductEntity.imeiController.text,).toList();
 
+            if (value!.isEmpty) return "Rellena el campo";
+
             if (imeis.length > 1) return "IMEI repetido";
 
-            if (value!.isEmpty) return "Rellena el campo";
             if (imeiProductEntity.error) return "IMEI no valido";
           },
         ),
