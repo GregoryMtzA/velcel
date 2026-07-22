@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => UserProvider(userRepository: locator()),),
         ChangeNotifierProvider(create: (context) => ProductsProvider(productsRepository: locator()),),
         ChangeNotifierProvider(create: (context) => ServicesProvider(servicesRepository: locator()),),
-        ChangeNotifierProvider(create: (context) => InventoryProvider(inventoryRepository: locator()),),
+        ChangeNotifierProvider(create: (context) => InventoryProvider(inventoryRepository: locator(), branchProvider: context.read())),
       ],
       child: MaterialApp(
         localizationsDelegates: [

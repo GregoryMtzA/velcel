@@ -18,7 +18,6 @@ class MenuDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     UserProvider userProvider = context.read();
     BranchProvider branchProvider = context.read();
 
@@ -35,114 +34,157 @@ class MenuDrawer extends StatelessWidget {
                     title: Row(
                       children: [
                         Icon(Icons.store_outlined),
-                        const SizedBox(width: 10,),
+                        const SizedBox(
+                          width: 10,
+                        ),
                         Text("Tienda")
                       ],
                     ),
-                    onTap: () => NavigationService.navigateTo(context, HomeScreen.init(context)),
+                    onTap: () => NavigationService.navigateTo(
+                        context, HomeScreen.init(context)),
                   ),
 
-                  const SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
 
                   ListTile(
                     tileColor: IsselColors.grisClaro,
                     title: Row(
                       children: [
                         Icon(Icons.home_repair_service_outlined),
-                        const SizedBox(width: 10,),
+                        const SizedBox(
+                          width: 10,
+                        ),
                         Text("Servicio")
                       ],
                     ),
-                    onTap: () => NavigationService.navigateTo(context, HomeServiceScreen()),
+                    onTap: () => NavigationService.navigateTo(
+                        context, HomeServiceScreen()),
                   ),
 
-                  const SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
 
                   ListTile(
                     tileColor: IsselColors.grisClaro,
                     title: Row(
                       children: [
                         Icon(Icons.inventory_2_outlined),
-                        const SizedBox(width: 10,),
+                        const SizedBox(
+                          width: 10,
+                        ),
                         Text("Inventario")
                       ],
                     ),
-                    onTap: () => NavigationService.navigateTo(context, HomeInventoryScreen()),
+                    onTap: () => NavigationService.navigateTo(
+                        context, HomeInventoryScreen()),
                   ),
 
-                  const SizedBox(height: 10,),
-
+                  const SizedBox(
+                    height: 10,
+                  ),
 
                   ListTile(
                     tileColor: IsselColors.grisClaro,
                     title: Row(
                       children: [
                         Icon(Icons.sell_outlined),
-                        const SizedBox(width: 10,),
+                        const SizedBox(
+                          width: 10,
+                        ),
                         Text("Ventas")
                       ],
                     ),
-                    onTap: () => NavigationService.navigateTo(context, HomeVentasScreen()),
+                    onTap: () => NavigationService.navigateTo(
+                        context, HomeVentasScreen()),
                   ),
 
-                  const SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
 
                   ListTile(
                     tileColor: IsselColors.grisClaro,
                     title: Row(
                       children: [
                         Icon(Icons.payment_outlined),
-                        const SizedBox(width: 10,),
+                        const SizedBox(
+                          width: 10,
+                        ),
                         Text("Gastos")
                       ],
                     ),
-                    onTap: () => NavigationService.navigateTo(context, HomeGastosScreen()),
+                    onTap: () => NavigationService.navigateTo(
+                        context, HomeGastosScreen()),
                   ),
 
-                  const SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
 
                   // TODO: LIBERAR IMPRESIONES
                   if (branchProvider.branch!.nombre == "VELCEL AVENTA")
-                  ListTile(
-                    tileColor: IsselColors.grisClaro,
-                    title: Row(
-                      children: [
-                        Icon(Icons.payment_outlined),
-                        const SizedBox(width: 10,),
-                        Text("Configuración")
-                      ],
+                    ListTile(
+                      tileColor: IsselColors.grisClaro,
+                      title: Row(
+                        children: [
+                          Icon(Icons.payment_outlined),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text("Configuración")
+                        ],
+                      ),
+                      onTap: () =>
+                          NavigationService.navigateTo(context, ConfigScreen()),
                     ),
-                    onTap: () => NavigationService.navigateTo(context, ConfigScreen()),
-                  ),
-
                 ],
               ),
             ),
+
             /// Corte, Sucursal y Usuario
             Positioned(
-              bottom: 20,
-              left: 10,
-              right: 10,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    tileColor: IsselColors.grisClaro,
-                    title: Row(
-                      children: [
-                        Icon(Icons.money_outlined),
-                        const SizedBox(width: 10,),
-                        Text("Corte")
-                      ],
+                bottom: 20,
+                left: 10,
+                right: 10,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      tileColor: IsselColors.grisClaro,
+                      title: Row(
+                        children: [
+                          Icon(Icons.money_outlined),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text("Corte")
+                        ],
+                      ),
+                      onTap: () => NavigationService.navigateTo(
+                          context, RegisterClosureScreen.init(context)),
                     ),
-                    onTap: () => NavigationService.navigateTo(context, RegisterClosureScreen.init(context)),
-                  ),
-                  const SizedBox(height: 10,),
-                  Text(branchProvider.branch!.nombre!, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: IsselColors.azulSemiOscuro),),
-                  Text(userProvider.userEntity!.usuario!, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: IsselColors.azulSemiOscuro),)
-                ],
-              )
-            ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      branchProvider.branch!.displayName,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(color: IsselColors.azulSemiOscuro),
+                    ),
+                    Text(
+                      userProvider.userEntity!.usuario!,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(color: IsselColors.azulSemiOscuro),
+                    )
+                  ],
+                )),
           ],
         ),
       ),

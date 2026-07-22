@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
   static Widget init(BuildContext context) => MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => CartState(productRepository: locator(), printerRepository: locator()),)
+      ChangeNotifierProvider(create: (context) => CartState(productRepository: locator(), printerRepository: locator(), branchProvider: context.read()),)
     ],
     builder: (context, child) => HomeScreen._(),
   );

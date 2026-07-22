@@ -10,8 +10,7 @@ import 'package:velcel/features/store/domain/repositories/products_repository.da
 import 'package:velcel/features/store/domain/requests/venta_request.dart';
 import 'package:velcel/features/store/domain/response/venta_response.dart';
 
-class ProductsRepositoryImpl implements ProductsRepository{
-
+class ProductsRepositoryImpl implements ProductsRepository {
   final Future<MySqlConnection> Function() createConnection;
 
   ProductsRepositoryImpl({
@@ -19,135 +18,151 @@ class ProductsRepositoryImpl implements ProductsRepository{
   });
 
   @override
-  Future<Either<Failure, List<ProductEntity>>> searchProducts(String name, String branchType) async {
+  Future<Either<Failure, List<ProductEntity>>> searchProducts(
+      String name, String branchType) async {
     final mysql = await createConnection();
-    try{
-
+    try {
       // await mysqlConnect();
 
-      Results results = await mysql.query('''SELECT nombre, categoria, precio, precioex, imagen, rimei, descripcion  FROM productos WHERE nombre LIKE ? ORDER BY nombre''', ["%${name}%"]);
+      Results results = await mysql.query(
+          '''SELECT nombre, nombre_ver, activo, categoria, precio, precioex, imagen, rimei, descripcion FROM productos WHERE (nombre LIKE ? OR nombre_ver LIKE ?) AND activo=1 ORDER BY nombre_ver''',
+          ["%${name}%", "%${name}%"]);
       List<ProductEntity> productsEntity = [];
 
-      for(var result in results){
+      for (var result in results) {
         productsEntity.add(ProductEntity(
             name: result["nombre"],
+            nombreVer: result["nombre_ver"],
             description: result["descripcion"],
-            price: branchType == "Normal" ? result["precio"] : result["precioex"],
+            price:
+                branchType == "Normal" ? result["precio"] : result["precioex"],
             image: Uint8List.fromList((result["imagen"] as Blob).toBytes()),
             rimei: result["rimei"] == 1 ? true : false,
-            category: result["categoria"]
-          )
-        );
+            category: result["categoria"],
+            activo: result["activo"] == 1));
       }
 
       // await mysql.close();
       return Right(productsEntity);
-
-    } on MySqlException catch(e){
-
+    } on MySqlException catch (e) {
       // await mysql.close();
       return Left(ServerFailure(message: e.message));
-
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
   Future<Either<Failure, int>> checkStock(String name, String sucursal) async {
     final mysql = await createConnection();
-    try{
-
+    try {
       // await mysqlConnect();
 
-      Results results = await mysql.query('''SELECT disponibles FROM almacenaje WHERE nombre=? AND sucursal=?''', [name, sucursal]);
+      Results results = await mysql.query(
+          '''SELECT disponibles FROM almacenaje WHERE nombre=? AND sucursal=?''',
+          [name, sucursal]);
 
-      if (results.isEmpty) return Left(ServerFailure(message: "No disponible en la sucursal"));
+      if (results.isEmpty)
+        return Left(ServerFailure(message: "No disponible en la sucursal"));
 
-      if (results.first["disponibles"] == 0) return Left(ServerFailure(message: "No hay stock"));
+      if (results.first["disponibles"] == 0)
+        return Left(ServerFailure(message: "No hay stock"));
 
       int stock = results.first["disponibles"];
 
       // await mysql.close();
       return Right(stock);
-
-    } on MySqlException catch(e){
-
+    } on MySqlException catch (e) {
       // await mysql.close();
       return Left(ServerFailure(message: e.message));
-
     } finally {
       print("cerrando conexion");
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, bool>> verifyImei(String producto, String imei) async {
+  Future<Either<Failure, bool>> verifyImei(
+      String producto, String imei, String sucursal) async {
     final mysql = await createConnection();
-    try{
-
+    try {
       // await mysqlConnect();
 
-      Results results = await mysql.query('''SELECT nombre FROM imeis WHERE nombre=? AND imei=?''', [producto, imei]);
+      Results results = await mysql.query(
+        '''SELECT nombre FROM imeis WHERE nombre=? AND imei=? AND (sucursal=? OR sucursal IS NULL)''',
+        [producto, imei, sucursal],
+      );
 
       if (results.isEmpty) return const Right(false);
 
       // await mysql.close();
 
       return const Right(true);
-
-    } on MySqlException catch(e){
-
+    } on MySqlException catch (e) {
       // await mysql.close();
       return Left(ServerFailure(message: e.message));
-
-    } finally{
+    } finally {
       await mysql.close();
     }
-
   }
 
   @override
   Future<Either<Failure, VentaResponse>> generarVenta(VentaRequest vr) async {
     final mysql = await createConnection();
-    try{
-
-
+    try {
       // await mysqlConnect();
 
       var uuid = const Uuid();
 
       String uuidString = uuid.v4();
 
-      if (vr.credito == "No"){
-
-        await mysql.transaction((transaction) async {
-
-          await mysql.query('''CALL proCrearVenta(?,?,?,?,?,?,?,?,?,?, @foliox, @fechax);''',
-              [vr.total, vr.metodo, vr.sucursal, vr.usuario, uuidString, vr.idCorte, vr.credito ,vr.nombres.join(","),
-                vr.cantidades.join(","), vr.imeis?.join(",")]);
-
-        },);
-
+      if (vr.credito == "No") {
+        await mysql.transaction(
+          (transaction) async {
+            await mysql.query(
+                '''CALL proCrearVenta(?,?,?,?,?,?,?,?,?,?, @foliox, @fechax);''',
+                [
+                  vr.total,
+                  vr.metodo,
+                  vr.sucursal,
+                  vr.usuario,
+                  uuidString,
+                  vr.idCorte,
+                  vr.credito,
+                  vr.nombres.join(","),
+                  vr.cantidades.join(","),
+                  vr.imeis?.join(",")
+                ]);
+          },
+        );
       } else {
-
-        await mysql.transaction((transaction) async {
-
-          await mysql.query('''CALL proCrearVentaPayjoi(?,?,?,?,?,?,?,?,?,?, @foliox, @fechax,?,?,?)''',
-            [vr.total, vr.metodo, vr.sucursal, vr.usuario, uuidString, vr.idCorte, vr.credito, vr.nombres.join(","),
-              vr.cantidades.join(","), vr.imeis?.join(","), vr.nombreC, vr.telefonoC, vr.domicilioC]);
-
-        },);
-
+        await mysql.transaction(
+          (transaction) async {
+            await mysql.query(
+                '''CALL proCrearVentaPayjoi(?,?,?,?,?,?,?,?,?,?, @foliox, @fechax,?,?,?)''',
+                [
+                  vr.total,
+                  vr.metodo,
+                  vr.sucursal,
+                  vr.usuario,
+                  uuidString,
+                  vr.idCorte,
+                  vr.credito,
+                  vr.nombres.join(","),
+                  vr.cantidades.join(","),
+                  vr.imeis?.join(","),
+                  vr.nombreC,
+                  vr.telefonoC,
+                  vr.domicilioC
+                ]);
+          },
+        );
       }
 
       Results results = await mysql.query('''SELECT @foliox, @fechax''');
 
-
-      Uint8List binaria = Uint8List.fromList((results.first["@fechax"] as Blob).toBytes());
+      Uint8List binaria =
+          Uint8List.fromList((results.first["@fechax"] as Blob).toBytes());
       String fechaString = utf8.decode(binaria);
       DateTime fecha = DateTime.parse(fechaString);
 
@@ -156,15 +171,11 @@ class ProductsRepositoryImpl implements ProductsRepository{
       // await mysql.close();
 
       return Right(VentaResponse(fecha: fecha, venta: folio));
-
-    } on MySqlException catch(e){
+    } on MySqlException catch (e) {
       // await mysql.close();
       return Left(ServerFailure(message: e.message));
-
     } finally {
       await mysql.close();
     }
-
   }
-
 }

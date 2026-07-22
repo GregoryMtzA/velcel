@@ -13,6 +13,6 @@ abstract class InventoryRepository {
   Future<Either<Failure, List<ProductInventoryEntity>>> getProductsWithCategory(String categoria, String sucursal);
   Future<Either<Failure, List<ProductAltasInventoryEntity>>> getProductsAltasWithDate(DateTime fechaA, DateTime fechaB, String sucursal);
   Future<Either<Failure, List<ProductAltasInventoryEntity>>> getProductsBajasWithDate(DateTime fechaA, DateTime fechaB, String sucursal);
-  Future<Either<Failure, List<String>>> getImeis(String modelo);
+  Future<Either<Failure, List<String>>> getImeis(String modelo, String scursal);
 
 }

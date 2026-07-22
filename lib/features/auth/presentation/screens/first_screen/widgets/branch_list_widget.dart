@@ -7,7 +7,6 @@ import '../../../../../../core/app/theme.dart';
 import '../../../../domain/entities/branch_entity.dart';
 
 class BranchListWidget extends StatefulWidget {
-
   const BranchListWidget({super.key});
 
   @override
@@ -15,7 +14,6 @@ class BranchListWidget extends StatefulWidget {
 }
 
 class _BranchListWidgetState extends State<BranchListWidget> {
-
   late Future<dartz.Either<String, List<BranchEntity>>> _future;
 
   @override
@@ -32,16 +30,21 @@ class _BranchListWidgetState extends State<BranchListWidget> {
     return FutureBuilder(
       future: _future,
       builder: (context, snapshot) {
-
-        if (snapshot.connectionState == ConnectionState.waiting){
-          return Center(child: CircularProgressIndicator(color: IsselColors.azulSemiOscuro,),);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: IsselColors.azulSemiOscuro,
+            ),
+          );
         }
 
         dartz.Either<String, List<BranchEntity>> response = snapshot.data!;
 
         return response.fold(
           (l) {
-            return Container(child: Text(l),);
+            return Container(
+              child: Text(l),
+            );
           },
           (branchs) {
             return ListView.builder(
@@ -51,7 +54,7 @@ class _BranchListWidgetState extends State<BranchListWidget> {
 
                 return ListTile(
                   titleTextStyle: Theme.of(context).textTheme.bodySmall,
-                  title: Text(branch.nombre),
+                  title: Text(branch.displayName),
                   leading: const Icon(Icons.location_on_outlined),
                   selected: branch == branchProvider.branch,
                   selectedColor: IsselColors.azulSemiOscuro,
@@ -59,13 +62,10 @@ class _BranchListWidgetState extends State<BranchListWidget> {
                     branchProvider.branch = branch;
                   },
                 );
-
               },
             );
-
           },
         );
-
       },
     );
   }

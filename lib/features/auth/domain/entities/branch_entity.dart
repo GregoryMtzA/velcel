@@ -1,16 +1,19 @@
 import 'package:equatable/equatable.dart';
 
 class BranchEntity extends Equatable {
-
-  String nombre;
-  String? telefono;
-  String? ciudad;
-  String? calle;
-  int? numeroDomicilio;
-  String? tipo;
+  final String nombre;
+  final String nombreVer;
+  final bool activa;
+  final String? telefono;
+  final String? ciudad;
+  final String? calle;
+  final int? numeroDomicilio;
+  final String? tipo;
 
   BranchEntity({
     required this.nombre,
+    required this.nombreVer,
+    required this.activa,
     this.telefono,
     this.ciudad,
     this.calle,
@@ -18,7 +21,17 @@ class BranchEntity extends Equatable {
     this.tipo,
   });
 
-  @override
-  List<Object?> get props => [nombre, telefono, ciudad, calle, numeroDomicilio, tipo];
+  String get displayName => nombreVer;
 
+  @override
+  List<Object?> get props => [
+        nombre,
+        nombreVer,
+        activa,
+        telefono,
+        ciudad,
+        calle,
+        numeroDomicilio,
+        tipo,
+      ];
 }

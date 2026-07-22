@@ -21,7 +21,7 @@ class UserRepositoryImpl implements UserRepository {
     final mysql = await createConnection();
     try{
 
-      Results results = await mysql.query('''SELECT nombre, tipo, telefono, identificador, usuario, sucursal, clave FROM empleados WHERE sucursal=? AND tipo=?''', [sucursal, tipo]);
+      Results results = await mysql.query('''SELECT nombre, tipo, telefono, identificador, usuario, sucursal, clave FROM empleados WHERE sucursal=? AND tipo=? AND activo=1''', [sucursal, tipo]);
       List<UserEntity> usersEntities = [];
 
       for(var result in results){

@@ -12,59 +12,55 @@ import '../models/product_altas_inventory_model.dart';
 import '../models/product_inventory_model.dart';
 
 class InventoryRepositoryImpl implements InventoryRepository {
-
   final Future<MySqlConnection> Function() createConnection;
-
 
   InventoryRepositoryImpl({
     required this.createConnection,
   });
 
-
-  String fechaFormateada(DateTime fecha){
+  String fechaFormateada(DateTime fecha) {
     return DateFormat('yyyy-MM-dd').format(fecha.toUtc());
   }
 
   @override
-  Future<Either<Failure, List<CategoryInventoryEntity>>> getAllCategories() async {
-
+  Future<Either<Failure, List<CategoryInventoryEntity>>>
+      getAllCategories() async {
     final mysql = await createConnection();
 
     try {
       print("OBTENIENDO CATEGORIAS");
 
-      Results results = await mysql.query("SELECT categoria FROM categorias", []);
+      Results results = await mysql
+          .query("SELECT categoria, categoria_ver FROM categorias", []);
 
       List<CategoryInventoryEntity> categories = [];
 
       for (var result in results) {
-        CategoryInventoryEntity category = CategoryInventoryModel.fromJson(result.fields);
+        CategoryInventoryEntity category =
+            CategoryInventoryModel.fromJson(result.fields);
         categories.add(category);
       }
 
       return Right(categories);
-
     } on MySqlException catch (e) {
       print(e);
       return Left(ServerFailure(message: 'Contacte a soporte'));
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductInventoryEntity>>> getProducts(String sucursal) async {
+  Future<Either<Failure, List<ProductInventoryEntity>>> getProducts(
+      String sucursal) async {
     final mysql = await createConnection();
 
     try {
-
       final List<ProductInventoryEntity> products = [];
       int offset = 0;
       const int limit = 100;
 
       while (true) {
-
         Results results = await mysql.query(
           '''
             SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
@@ -92,86 +88,79 @@ class InventoryRepositoryImpl implements InventoryRepository {
       }
 
       return Right(products);
-
     } on MySqlException catch (e) {
       print(e);
       return Left(ServerFailure(message: "Contacte a soporte"));
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductAltasInventoryEntity>>> getProductsAltasWithDate(DateTime fechaA, DateTime fechaB, String sucursal) async {
+  Future<Either<Failure, List<ProductAltasInventoryEntity>>>
+      getProductsAltasWithDate(
+          DateTime fechaA, DateTime fechaB, String sucursal) async {
     final mysql = await createConnection();
 
     try {
-
       String fechaA_Formatted = fechaFormateada(fechaA);
       String fechaB_Formatted = fechaFormateada(fechaB);
 
       List<ProductAltasInventoryEntity> products = [];
 
       Results results = await mysql.query(
-        '''SELECT nombre, sucursal, cantidad, fecha FROM altas WHERE (fecha BETWEEN ? AND ?) AND sucursal = ?''',
-        [fechaA_Formatted, fechaB_Formatted, sucursal]
-      );
+          '''SELECT nombre, sucursal, cantidad, imeis, fecha FROM altas WHERE (fecha BETWEEN ? AND ?) AND sucursal = ?''',
+          [fechaA_Formatted, fechaB_Formatted, sucursal]);
 
-      for (var result in results){
-        ProductAltasInventoryEntity product = ProductAltasInventoryModel.fromJson(result.fields);
+      for (var result in results) {
+        ProductAltasInventoryEntity product =
+            ProductAltasInventoryModel.fromJson(result.fields);
         products.add(product);
       }
 
       return Right(products);
-
     } on MySqlException catch (e) {
-
       print(e);
       return Left(ServerFailure(message: "Contacte a soporte"));
-
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductAltasInventoryEntity>>> getProductsBajasWithDate(DateTime fechaA, DateTime fechaB, String sucursal) async {
+  Future<Either<Failure, List<ProductAltasInventoryEntity>>>
+      getProductsBajasWithDate(
+          DateTime fechaA, DateTime fechaB, String sucursal) async {
     final mysql = await createConnection();
 
     try {
-
       String fechaA_Formatted = fechaFormateada(fechaA);
       String fechaB_Formatted = fechaFormateada(fechaB);
 
       List<ProductAltasInventoryEntity> products = [];
 
       Results results = await mysql.query(
-        '''SELECT nombre, sucursal, cantidad, motivo, fecha FROM bajas WHERE (fecha BETWEEN ? AND ?) AND sucursal = ?''',
-        [fechaA_Formatted, fechaB_Formatted, sucursal]
-      );
+          '''SELECT nombre, sucursal, cantidad, motivo, fecha FROM bajas WHERE (fecha BETWEEN ? AND ?) AND sucursal = ?''',
+          [fechaA_Formatted, fechaB_Formatted, sucursal]);
 
-      for (var result in results){
-        ProductAltasInventoryEntity product = ProductAltasInventoryModel.fromJson(result.fields);
+      for (var result in results) {
+        ProductAltasInventoryEntity product =
+            ProductAltasInventoryModel.fromJson(result.fields);
         products.add(product);
       }
 
       return Right(products);
-
     } on MySqlException catch (e) {
-
       print(e);
       return Left(ServerFailure(message: "Contacte a soporte"));
-
     } finally {
-       await mysql.close();
+      await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductInventoryEntity>>> getProductsWithCategory(String categoria, String sucursal) async {
+  Future<Either<Failure, List<ProductInventoryEntity>>> getProductsWithCategory(
+      String categoria, String sucursal) async {
     final mysql = await createConnection();
 
     try {
@@ -179,33 +168,31 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
       List<ProductInventoryEntity> products = [];
 
-      Results results = await mysql.query(
-        '''SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
+      Results results = await mysql
+          .query('''SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
           FROM productos p
           JOIN almacenaje a ON p.nombre = a.nombre
           WHERE p.categoria = ? AND a.sucursal = ?
-          ORDER BY p.categoria''',
-        [categoria, sucursal]
-      );
+          ORDER BY p.categoria''', [categoria, sucursal]);
 
-      for (var result in results){
-        ProductInventoryEntity product = ProductInventoryModel.fromJson(result.fields);
+      for (var result in results) {
+        ProductInventoryEntity product =
+            ProductInventoryModel.fromJson(result.fields);
         products.add(product);
       }
 
       return Right(products);
-
     } on MySqlException catch (e) {
       print(e);
       return Left(ServerFailure(message: "Contacte a soporte"));
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductInventoryEntity>>> getProductsWithName(String nombre, String sucursal) async {
+  Future<Either<Failure, List<ProductInventoryEntity>>> getProductsWithName(
+      String nombre, String sucursal) async {
     final mysql = await createConnection();
 
     try {
@@ -213,40 +200,37 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
       List<ProductInventoryEntity> products = [];
 
-      Results results = await mysql.query(
-          '''SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
+      Results results = await mysql
+          .query('''SELECT p.categoria, p.nombre, a.disponibles, p.descripcion
             FROM productos p
             JOIN almacenaje a ON p.nombre = a.nombre
             WHERE p.nombre LIKE ? AND a.sucursal = ?
-            ORDER BY p.categoria''',
-          ["%${nombre}%", sucursal]
-      );
+            ORDER BY p.categoria''', ["%${nombre}%", sucursal]);
 
-      for (var result in results){
-        ProductInventoryEntity product = ProductInventoryModel.fromJson(result.fields);
+      for (var result in results) {
+        ProductInventoryEntity product =
+            ProductInventoryModel.fromJson(result.fields);
         products.add(product);
       }
 
       return Right(products);
-
     } on MySqlException catch (e) {
       print(e);
       return Left(ServerFailure(message: "Contacte a soporte"));
-    } finally{
+    } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<String>>> getImeis(String modelo) async {
+  Future<Either<Failure, List<String>>> getImeis(String modelo, String sucursal) async {
     final mysql = await createConnection();
 
     try {
-
       List<String> imeis = [];
 
-      Results results = await mysql.query('''SELECT imei FROM imeis WHERE nombre=?''', [modelo]);
+      Results results = await mysql
+          .query('''SELECT imei FROM imeis WHERE nombre=? AND sucursal=?''', [modelo, sucursal]);
 
       for (var result in results) {
         String imei = result["imei"];
@@ -254,14 +238,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       }
 
       return Right(imeis);
-
-    } on MySqlException catch(e) {
+    } on MySqlException {
       return Left(ServerFailure(message: "Contacte a soporte"));
     } finally {
       await mysql.close();
     }
-
   }
-
-
 }

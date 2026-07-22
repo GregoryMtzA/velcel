@@ -9,7 +9,7 @@ abstract class ProductsRepository {
 
   Future<Either<Failure, List<ProductEntity>>> searchProducts(String name, String branchType);
   Future<Either<Failure, int>> checkStock(String name, String sucursal);
-  Future<Either<Failure, bool>> verifyImei(String producto, String imei);
+  Future<Either<Failure, bool>> verifyImei(String producto, String imei, String sucursal);
   Future<Either<Failure, VentaResponse>> generarVenta(VentaRequest ventaRequest);
 
 }

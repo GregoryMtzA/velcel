@@ -1,5 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:velcel/features/auth/domain/repositories/branch_repository.dart';
+import 'package:velcel/features/auth/presentation/providers/branch_provider.dart';
 import 'package:velcel/features/inventory/domain/entities/category_inventory_entity.dart';
 import 'package:velcel/features/inventory/domain/entities/product_inventory_entity.dart';
 
@@ -10,10 +12,12 @@ import '../../domain/repositories/inventory_repository.dart';
 class InventoryProvider extends ChangeNotifier {
 
   InventoryRepository inventoryRepository;
+  BranchProvider branchProvider;
 
 
   InventoryProvider({
     required this.inventoryRepository,
+    required this.branchProvider,
   });
 
   List<CategoryInventoryEntity> categories = [];
@@ -89,7 +93,7 @@ class InventoryProvider extends ChangeNotifier {
 
   Future<void> getImeis(String nombre) async {
 
-    final usecase = await inventoryRepository.getImeis(nombre);
+    final usecase = await inventoryRepository.getImeis(nombre, branchProvider.branch!.nombre);
 
     usecase.fold(
       (l) {

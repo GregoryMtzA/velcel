@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:velcel/features/auth/presentation/providers/branch_provider.dart';
 import 'package:velcel/features/config/domain/repositories/printer_repository_interface.dart';
 import 'package:velcel/features/store/domain/entities/cart_entity.dart';
 import 'package:velcel/features/store/domain/entities/cart_method_pay.dart';
@@ -26,10 +27,12 @@ class CartState extends ChangeNotifier {
 
   ProductsRepository productRepository;
   PrinterRepositoryInterface printerRepository;
+  BranchProvider branchProvider;
 
   CartState({
     required this.productRepository,
-    required this.printerRepository
+    required this.printerRepository,
+    required this.branchProvider,
   });
 
   final formKeyValidate = GlobalKey<FormState>();
@@ -125,7 +128,7 @@ class CartState extends ChangeNotifier {
 
     for (ImeiProductEntity imeiProductEntity in imeiProductEntitiesCart){
 
-      Either<Failure, bool> usecase = await productRepository.verifyImei(imeiProductEntity.cartProductEntity.product.name, imeiProductEntity.imeiController.text);
+      Either<Failure, bool> usecase = await productRepository.verifyImei(imeiProductEntity.cartProductEntity.product.name, imeiProductEntity.imeiController.text, branchProvider.branch!.nombre);
 
       usecase.fold(
         (l) {

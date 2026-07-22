@@ -29,12 +29,12 @@ GetIt locator = GetIt.instance;
 
 Future<void> injectContainer() async {
   await dotenv.load(fileName: '.env');
-  // print(dotenv.env['HOST']!);
-  // print(dotenv.env['USER_TEST']!);
-  // print(dotenv.env['PASSWORD_TEST']!);
-  // print(dotenv.env['DB_TEST']!);
+  print(dotenv.env['HOST']!);
+  print(dotenv.env['USER_TEST']!);
+  print(dotenv.env['PASSWORD_TEST']!);
+  print(dotenv.env['DB_TEST']!);
 
-  /// GENERALES
+  /// Prod
   var settings = new ConnectionSettings(
     host: dotenv.env['HOST']!,
     user: dotenv.env['USER_PROD']!,

@@ -12,8 +12,6 @@ import '../../../../../../core/app/theme.dart';
 import '../../../../../store/presentation/screens/register_opening/screen.dart';
 
 class LoginForm extends StatefulWidget {
-
-
   LoginForm({super.key});
 
   @override
@@ -45,25 +43,34 @@ class _LoginFormState extends State<LoginForm> {
           children: [
             // TEXTO
             Positioned(
-              top: 20,
-              child: Text(branchProvider.branch!.nombre, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: IsselColors.azulClaro, fontWeight: FontWeight.bold),)
-            ),
+                top: 20,
+                child: Text(
+                  branchProvider.branch!.displayName,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: IsselColors.azulClaro,
+                      fontWeight: FontWeight.bold),
+                )),
 
             // FORMULARIO
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  "Comencemos",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
 
-                Text("Comencemos", style: Theme.of(context).textTheme.titleSmall,),
-
-                const SizedBox(height: 50,),
-
+                const SizedBox(
+                  height: 50,
+                ),
 
                 /// USUARIO
                 const LoginFormUsers(),
 
-                const SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
 
                 InputApp(
                   hintText: "Contraseña",
@@ -71,38 +78,34 @@ class _LoginFormState extends State<LoginForm> {
                   controller: passwordController,
                   validator: (value) {
                     if (value!.isEmpty) return "Ingresa una contraseña";
+                    return null;
                   },
                   obscureText: true,
                 ),
 
-                const SizedBox(height: 30,),
+                const SizedBox(
+                  height: 30,
+                ),
 
                 ButtonApp(
                   text: "Ingresar",
                   onTap: () async {
-
-                    if (!_formKey.currentState!.validate()){
+                    if (!_formKey.currentState!.validate()) {
                       return;
                     }
 
-                    if (userProvider.userEntity!.clave == passwordController.text){
+                    if (userProvider.userEntity!.clave ==
+                        passwordController.text) {
                       SnackbarService.showCorrect(
-                        context,
-                        "Login",
-                        "Ingreso Correcto"
-                      );
-                      await NavigationService.navigateTo(context, RegisterOpening());
+                          context, "Login", "Ingreso Correcto");
+                      await NavigationService.navigateTo(
+                          context, RegisterOpening());
                     } else {
                       SnackbarService.showIncorrect(
-                        context,
-                        "Login",
-                        "Las Credenciales no coinciden"
-                      );
+                          context, "Login", "Las Credenciales no coinciden");
                     }
-
                   },
                 )
-
               ],
             ),
           ],
