@@ -36,7 +36,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
             description: result["descripcion"],
             price:
                 branchType == "Normal" ? result["precio"] : result["precioex"],
-            image: Uint8List.fromList((result["imagen"] as Blob).toBytes()),
+            image: result["imagen"] != null ? Uint8List.fromList((result["imagen"] as Blob).toBytes()) : null,
             rimei: result["rimei"] == 1 ? true : false,
             category: result["categoria"],
             activo: result["activo"] == 1));

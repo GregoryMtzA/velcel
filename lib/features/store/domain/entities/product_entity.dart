@@ -7,7 +7,7 @@ class ProductEntity extends Equatable {
   final String nombreVer;
   final String description;
   final double price;
-  final Uint8List image;
+  final Uint8List? image;
   final String category;
   final bool rimei;
   final bool activo;
