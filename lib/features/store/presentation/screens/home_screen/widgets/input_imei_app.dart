@@ -1,42 +1,48 @@
-import 'package:dartz/dartz.dart' as dartz;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:issel_code_widgets/issel_code_widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:velcel/features/store/domain/entities/cart_entity.dart';
+import 'package:velcel/features/store/presentation/screens/home_screen/states/cart_state.dart';
 import 'package:velcel/features/store/presentation/screens/home_screen/states/imei_product_entity.dart';
 
-import '../../../../../widgets/input_app.dart';
-import '../states/cart_state.dart';
-
 class InputImeiApp extends StatelessWidget {
+  const InputImeiApp({
+    super.key,
+    required this.imeiProductEntity,
+  });
 
-  ImeiProductEntity imeiProductEntity;
-
-  InputImeiApp({super.key, required this.imeiProductEntity});
+  final ImeiProductEntity imeiProductEntity;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InputApp(
-          hintText: "Ingresa IMEI",
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          controller: imeiProductEntity.imeiController,
-          validator: (value) {
-            CartState cartState = context.read();
+    final colors = Theme.of(context).colorScheme;
 
-            List<ImeiProductEntity> imeis = cartState.imeiProductEntitiesCart.where((element) => element.imeiController.text == imeiProductEntity.imeiController.text,).toList();
+    return IsselTextFormField(
+      hintText: 'Ingresa el IMEI',
+      prefixIcon: Icons.phone_android_outlined,
+      controller: imeiProductEntity.imeiController,
+      fillColor: colors.surfaceContainer,
+      height: 50,
+      keyboardType: TextInputType.number,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      onChanged: (_) => imeiProductEntity.error = false,
+      validator: (value) {
+        final cartState = context.read<CartState>();
+        final currentImei = value?.trim() ?? '';
 
-            if (value!.isEmpty) return "Rellena el campo";
+        if (currentImei.isEmpty) return 'Completa este campo';
 
-            if (imeis.length > 1) return "IMEI repetido";
+        final duplicateCount = cartState.imeiProductEntitiesCart
+            .where(
+              (element) => element.imeiController.text.trim() == currentImei,
+            )
+            .length;
 
-            if (imeiProductEntity.error) return "IMEI no valido";
-          },
-        ),
+        if (duplicateCount > 1) return 'IMEI repetido';
 
-      ],
+        if (imeiProductEntity.error) return 'IMEI no válido';
+
+        return null;
+      },
     );
   }
 }

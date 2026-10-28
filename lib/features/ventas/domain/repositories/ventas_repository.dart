@@ -7,12 +7,20 @@ import 'package:velcel/features/ventas/domain/entities/productos_venta_entity.da
 import 'package:velcel/features/ventas/domain/entities/semi_reporte_venta_entity.dart';
 
 abstract class VentasRepository {
-
   Future<Either<Failure, List<ImeisVentaEntity>>> getIMEIS(int folio);
   Future<Either<Failure, List<ClientesVentaEntity>>> getClientes(int folio);
   Future<Either<Failure, List<ProductosVentaEntity>>> getProductos(int folio);
-  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFolio(String sucursal, int folio);
-  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithDate(String sucursal, DateTime fechaA, DateTime fechaB);
-  Future<Either<Failure, List<CorteEntity>>> getCortesWithFecha(String sucursal, DateTime fechaA, DateTime fechaB);
-
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFolio(
+      String sucursal, int folio);
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithDate(
+      String sucursal, DateTime fechaA, DateTime fechaB);
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFilters({
+    required String sucursal,
+    int? folio,
+    int? folioCorte,
+    required DateTime fechaA,
+    required DateTime fechaB,
+  });
+  Future<Either<Failure, List<CorteEntity>>> getCortesWithFecha(
+      String sucursal, DateTime fechaA, DateTime fechaB);
 }

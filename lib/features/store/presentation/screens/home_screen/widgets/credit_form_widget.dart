@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:issel_code_widgets/issel_code_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:velcel/features/store/presentation/screens/home_screen/states/cart_state.dart';
 
 import '../../../../../../core/app/enums/enums.dart';
 import '../../../../../../core/app/expresiones_regulares.dart';
-import '../../../../../widgets/input_app.dart';
 
 class CreditFormWidget extends StatefulWidget {
   const CreditFormWidget({super.key});
@@ -18,101 +18,141 @@ class _CreditFormWidgetState extends State<CreditFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    CartState cartState = context.read();
+    final cartState = context.watch<CartState>();
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    if (cartState.cartPaymentType?.enumType == PaymentTypes.normal) {
+      return const SizedBox.shrink();
+    }
 
     return Form(
       key: cartState.creditFormKey,
-      child: Column(
-        children: [
-          if (cartState.cartPaymentType!.enumType != PaymentTypes.normal)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() => _expanded = !_expanded);
-                    },
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Datos para credito",
-                            style: Theme.of(context).textTheme.bodyLarge,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Datos del crédito',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colors.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Icon(_expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,),
-                      ],
+                          const SizedBox(height: 3),
+                          Text(
+                            'Nombre, teléfono, domicilio y enganche.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.outline,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    Icon(
+                      _expanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: colors.outline,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            AnimatedCrossFade(
+              firstChild: Column(
+                children: [
+                  const SizedBox(height: 14),
+                  IsselTextFormField(
+                    hintText: 'Nombre completo',
+                    prefixIcon: Icons.person_outline,
+                    controller: cartState.creditNameController,
+                    fillColor: colors.surface,
+                    height: 50,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: _required,
                   ),
-                  AnimatedCrossFade(
-                    firstChild: Column(
-                      children: [
-                        const SizedBox(height: 15),
-                        InputApp(
-                          hintText: "Nombre completo",
-                          icon: Icons.person_outlined,
-                          controller: cartState.creditNameController,
-                          validator: (value) {
-                            if (value!.isEmpty) return "llena el campo";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        InputApp(
-                          validator: (value) {
-                            if (value!.isEmpty) return "llena el campo";
-                            return null;
-                          },
-                          inputFormatters: [
-                            TextInputFormatters().cellPhoneNumber,
-                          ],
-                          hintText: "Numero de telefono",
-                          icon: Icons.phone_enabled_outlined,
-                          controller: cartState.creditPhoneController,
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 10),
-                        InputApp(
-                          hintText: "Domicilio",
-                          icon: Icons.location_on_outlined,
-                          controller: cartState.creditAddressController,
-                          validator: (value) {
-                            if (value!.isEmpty) return "llena el campo";
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        InputApp(
-                          hintText: "Enganche",
-                          icon: Icons.money_outlined,
-                          controller: cartState.creditEnchangeController,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value!.isEmpty) return "llena el campo";
-                            return null;
-                          },
-                        ),
-                      ],
+                  const SizedBox(height: 10),
+                  IsselTextFormField(
+                    hintText: 'Número de teléfono',
+                    prefixIcon: Icons.phone_outlined,
+                    controller: cartState.creditPhoneController,
+                    fillColor: colors.surface,
+                    height: 50,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [TextInputFormatters().cellPhoneNumber],
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: _required,
+                  ),
+                  const SizedBox(height: 10),
+                  IsselTextFormField(
+                    hintText: 'Domicilio',
+                    prefixIcon: Icons.location_on_outlined,
+                    controller: cartState.creditAddressController,
+                    fillColor: colors.surface,
+                    height: 76,
+                    maxLines: 2,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: _required,
+                  ),
+                  const SizedBox(height: 10),
+                  IsselTextFormField(
+                    hintText: 'Enganche',
+                    prefixIcon: Icons.attach_money,
+                    controller: cartState.creditEnchangeController,
+                    fillColor: colors.surface,
+                    height: 50,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    secondChild: const SizedBox.shrink(),
-                    crossFadeState: _expanded
-                        ? CrossFadeState.showFirst
-                        : CrossFadeState.showSecond,
-                    duration: const Duration(milliseconds: 200),
+                    inputFormatters: [TextInputFormatters().double],
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: _validateDownPayment,
                   ),
                 ],
               ),
+              secondChild: const SizedBox.shrink(),
+              crossFadeState: _expanded
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
+              duration: const Duration(milliseconds: 200),
             ),
-          if (cartState.cartPaymentType!.enumType != PaymentTypes.normal)
-            const SizedBox(height: 20),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  String? _required(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Completa este campo';
+    }
+    return null;
+  }
+
+  String? _validateDownPayment(String? value) {
+    final requiredError = _required(value);
+    if (requiredError != null) return requiredError;
+
+    if (double.tryParse(value!.trim()) == null) {
+      return 'Ingresa una cantidad válida';
+    }
+    return null;
   }
 }

@@ -1,136 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:issel_code_widgets/issel_code_widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../domain/entities/cart_entity.dart';
 import '../states/cart_state.dart';
 
 class CartPageListProductsWidget extends StatelessWidget {
-  CartPageListProductsWidget({
-    super.key,
-  });
+  const CartPageListProductsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    CartState cartState = context.read();
+    final cartState = context.watch<CartState>();
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-      color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Columnas
-          _columns(context),
-
-          const SizedBox(
-            height: 10,
+          Text(
+            'Productos seleccionados',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colors.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-
-          // Lista de productos
+          const SizedBox(height: 12),
           Expanded(
-              child: ListView.builder(
-            itemCount: cartState.cart.length,
-            itemBuilder: (context, index) {
-              CartProductEntity cartProductEntity = cartState.cart[index];
-
-              return Container(
-                decoration: BoxDecoration(
-                    color:
-                        cartState.selectedProduct == cartProductEntity.product
-                            ? Theme.of(context).colorScheme.surface
-                            : null,
-                    borderRadius: BorderRadius.circular(15)),
-                margin: const EdgeInsets.symmetric(vertical: 5),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                height: 80,
-                child: InkWell(
-                  onTap: () =>
-                      cartState.selectedProduct = cartProductEntity.product,
-                  child: Row(
-                    children: [
-                      Expanded(
-                          flex: 2,
-                          child: Text(
-                            "${cartProductEntity.product.displayName}",
-                            style: Theme.of(context).textTheme.bodySmall,
-                            maxLines: 3,
-                          )),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Expanded(
-                          child: Text(
-                        "${cartProductEntity.quantity}",
-                        style: Theme.of(context).textTheme.bodySmall,
-                        textAlign: TextAlign.center,
-                      )),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Expanded(
-                          child: Text(
-                        "${cartProductEntity.product.price * cartProductEntity.quantity}",
-                        style: Theme.of(context).textTheme.bodySmall,
-                      )),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: IconButton(
-                          onPressed: () =>
-                              cartState.deleteProduct(cartProductEntity),
-                          icon: Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                    ],
+            child: cartState.cart.isEmpty
+                ? _emptyCart(context)
+                : ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    itemCount: cartState.cart.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final cartProduct = cartState.cart[index];
+                      return _cartItem(context, cartState, cartProduct);
+                    },
                   ),
-                ),
-              );
-            },
-          ))
+          ),
         ],
       ),
     );
   }
 
-  Container _columns(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        children: [
-          Expanded(
-              flex: 2,
-              child: Text(
-                "Productos",
-                style: Theme.of(context).textTheme.bodyLarge,
-              )),
-          const SizedBox(
-            width: 5,
+  Widget _cartItem(
+    BuildContext context,
+    CartState cartState,
+    CartProductEntity cartProduct,
+  ) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isSelected = cartState.selectedProduct == cartProduct.product;
+
+    return Material(
+      color: isSelected ? colors.primaryContainer : colors.surfaceContainer,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: () => cartState.selectedProduct = cartProduct.product,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  cartProduct.product.displayName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IsselPill(
+                text: 'x${cartProduct.quantity}',
+                height: 32,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                color: colors.surface,
+                textColor: colors.primary,
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 74,
+                child: Text(
+                  '\$ ${(cartProduct.product.price * cartProduct.quantity).toStringAsFixed(2)}',
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Eliminar producto',
+                onPressed: () => cartState.deleteProduct(cartProduct),
+                icon: Icon(Icons.delete_outline, color: colors.error),
+              ),
+            ],
           ),
-          Expanded(
-              child: Text(
-            "Cant.",
-            style: Theme.of(context).textTheme.bodyLarge,
-            textAlign: TextAlign.center,
-          )),
-          const SizedBox(
-            width: 5,
-          ),
-          Expanded(
-              child:
-                  Text("Precio", style: Theme.of(context).textTheme.bodyLarge)),
-          const SizedBox(
-            width: 5,
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(),
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyCart(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Center(
+      child: Text(
+        'Aún no has agregado productos.',
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colors.outline,
+        ),
       ),
     );
   }

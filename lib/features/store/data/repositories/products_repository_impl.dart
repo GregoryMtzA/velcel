@@ -36,7 +36,9 @@ class ProductsRepositoryImpl implements ProductsRepository {
             description: result["descripcion"],
             price:
                 branchType == "Normal" ? result["precio"] : result["precioex"],
-            image: result["imagen"] != null ? Uint8List.fromList((result["imagen"] as Blob).toBytes()) : null,
+            image: result["imagen"] != null
+                ? Uint8List.fromList((result["imagen"] as Blob).toBytes())
+                : null,
             rimei: result["rimei"] == 1 ? true : false,
             category: result["categoria"],
             activo: result["activo"] == 1));
@@ -115,6 +117,8 @@ class ProductsRepositoryImpl implements ProductsRepository {
       var uuid = const Uuid();
 
       String uuidString = uuid.v4();
+      final imeis =
+          vr.imeis == null || vr.imeis!.isEmpty ? null : vr.imeis!.join(",");
 
       if (vr.credito == "No") {
         await mysql.transaction(
@@ -131,7 +135,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
                   vr.credito,
                   vr.nombres.join(","),
                   vr.cantidades.join(","),
-                  vr.imeis?.join(",")
+                  imeis
                 ]);
           },
         );
@@ -150,7 +154,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
                   vr.credito,
                   vr.nombres.join(","),
                   vr.cantidades.join(","),
-                  vr.imeis?.join(","),
+                  imeis,
                   vr.nombreC,
                   vr.telefonoC,
                   vr.domicilioC

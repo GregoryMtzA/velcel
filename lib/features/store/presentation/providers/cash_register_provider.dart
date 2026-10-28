@@ -7,7 +7,6 @@ import '../../../../core/errors/failures.dart';
 import '../../domain/entities/cash_register_data_response.dart';
 
 class CashRegisterProvider extends ChangeNotifier {
-
   CashRegisterRepository cashRegisterRepository;
 
   CashRegisterProvider({
@@ -17,33 +16,82 @@ class CashRegisterProvider extends ChangeNotifier {
   CashRegisterEntity? cashRegister;
   CashRegisterDataResponse? cashRegisterDataResponse;
 
-  Future<void> registerOpening(String sucursal, String usuario, double fondo) async {
+  int? _lastClosedCutFolio;
+  String? _lastClosedCutBranch;
+  bool _isLoadingLastClosedCut = false;
+  bool _lastClosedCutLoaded = false;
+  String? _lastClosedCutError;
 
-    cashRegister = await cashRegisterRepository.registerOpening(fondo, sucursal, usuario);
+  int? get lastClosedCutFolio => _lastClosedCutFolio;
+  String? get lastClosedCutBranch => _lastClosedCutBranch;
+  bool get isLoadingLastClosedCut => _isLoadingLastClosedCut;
+  String? get lastClosedCutError => _lastClosedCutError;
 
+  Future<void> loadLastClosedCut(
+    String sucursal, {
+    bool force = false,
+  }) async {
+    if (sucursal.isEmpty ||
+        (!force &&
+            (_lastClosedCutBranch == sucursal &&
+                (_isLoadingLastClosedCut ||
+                    _lastClosedCutFolio != null ||
+                    _lastClosedCutError != null ||
+                    _lastClosedCutLoaded)))) {
+      return;
+    }
+
+    _lastClosedCutBranch = sucursal;
+    _lastClosedCutFolio = null;
+    _lastClosedCutError = null;
+    _lastClosedCutLoaded = false;
+    _isLoadingLastClosedCut = true;
+    notifyListeners();
+
+    final response =
+        await cashRegisterRepository.getLastClosedCutFolio(sucursal);
+    if (_lastClosedCutBranch != sucursal) return;
+
+    response.fold(
+      (failure) => _lastClosedCutError = failure is ServerFailure
+          ? failure.message
+          : 'No se pudo consultar el último corte',
+      (folio) => _lastClosedCutFolio = folio,
+    );
+    _lastClosedCutLoaded = true;
+    _isLoadingLastClosedCut = false;
+    notifyListeners();
   }
 
-  Future<Either<String, CashRegisterEntity?>> openCashRegister(String sucursal) async{
+  Future<void> registerOpening(
+      String sucursal, String usuario, double fondo) async {
+    cashRegister =
+        await cashRegisterRepository.registerOpening(fondo, sucursal, usuario);
+  }
 
-    Either<Failure, CashRegisterEntity?> usecase = await cashRegisterRepository.openCashRegister(sucursal);
+  Future<Either<String, CashRegisterEntity?>> openCashRegister(
+      String sucursal) async {
+    Either<Failure, CashRegisterEntity?> usecase =
+        await cashRegisterRepository.openCashRegister(sucursal);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) {
         cashRegister = r;
         return Right(cashRegister);
       },
     );
-
   }
 
-  Future<Either<String, CashRegisterDataResponse>> getCashRegisterData(String sucursal) async {
-
-    Either<Failure, CashRegisterDataResponse> usecase = await cashRegisterRepository.getCashRegisterData(sucursal, cashRegister!.identificador);
+  Future<Either<String, CashRegisterDataResponse>> getCashRegisterData(
+      String sucursal) async {
+    Either<Failure, CashRegisterDataResponse> usecase =
+        await cashRegisterRepository.getCashRegisterData(
+            sucursal, cashRegister!.identificador);
 
     return usecase.fold(
       (l) {
-        return Left( (l as ServerFailure).message );
+        return Left((l as ServerFailure).message);
       },
       (r) {
         r.totalBruto = r.totalesEfectivo + r.totalesTarjeta + r.fondo;
@@ -52,7 +100,5 @@ class CashRegisterProvider extends ChangeNotifier {
         return Right(cashRegisterDataResponse!);
       },
     );
-
   }
-
 }

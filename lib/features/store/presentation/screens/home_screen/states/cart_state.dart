@@ -22,9 +22,7 @@ import '../../../../../../core/app/enums/enums.dart';
 import '../../../../../../core/errors/failures.dart';
 import '../../../../domain/entities/cart_payment_type.dart';
 
-
 class CartState extends ChangeNotifier {
-
   ProductsRepository productRepository;
   PrinterRepositoryInterface printerRepository;
   BranchProvider branchProvider;
@@ -50,12 +48,15 @@ class CartState extends ChangeNotifier {
   CartStates _cartState = CartStates.cart;
   CartStates get cartState => _cartState;
   set cartState(CartStates value) {
-    if (value == CartStates.cart){
-      cartPageController.animateToPage(0, duration: const Duration(milliseconds: 350), curve: Curves.linear);
-    } else if (value == CartStates.pay){
-      cartPageController.animateToPage(1, duration: const Duration(milliseconds: 350), curve: Curves.linear);
-    } else if (value == CartStates.purchase){
-      cartPageController.animateToPage(2, duration: const Duration(milliseconds: 350), curve: Curves.linear);
+    if (value == CartStates.cart) {
+      cartPageController.animateToPage(0,
+          duration: const Duration(milliseconds: 350), curve: Curves.linear);
+    } else if (value == CartStates.pay) {
+      cartPageController.animateToPage(1,
+          duration: const Duration(milliseconds: 350), curve: Curves.linear);
+    } else if (value == CartStates.purchase) {
+      cartPageController.animateToPage(2,
+          duration: const Duration(milliseconds: 350), curve: Curves.linear);
     }
     _cartState = value;
     notifyListeners();
@@ -67,6 +68,12 @@ class CartState extends ChangeNotifier {
   CartPaymentTypeEntity? get cartPaymentType => _cartPaymentType;
   set cartPaymentType(CartPaymentTypeEntity? value) {
     _cartPaymentType = value;
+    if (value == null || value.enumType == PaymentTypes.normal) {
+      creditNameController.clear();
+      creditPhoneController.clear();
+      creditAddressController.clear();
+      creditEnchangeController.clear();
+    }
     notifyListeners();
   }
 
@@ -93,90 +100,88 @@ class CartState extends ChangeNotifier {
 
   /// VERIFICAR METODO
 
-  bool applyForPaguitos () {
-
+  bool applyForPaguitos() {
     // Si solo hay un producto en el carrito | Y | Si el producto es de categoria Celulares | Entonces | Aplica
-    if (cart.length == 1 && cart.any((element) => element.product.category == "CELULARES",) && cart.first.quantity == 1) return true;
+    if (cart.length == 1 &&
+        cart.any(
+          (element) => element.product.category == "CELULARES",
+        ) &&
+        cart.first.quantity == 1) return true;
 
     return false;
   }
 
-  List<ImeiProductEntity> getCartsWithImeiApply () {
-
+  List<ImeiProductEntity> getCartsWithImeiApply() {
     List<ImeiProductEntity> imeiProductEntities = [];
 
-    List<CartProductEntity> productsWithImei = cart.where((cartProduct) => cartProduct.product.rimei == true,).toList();
+    List<CartProductEntity> productsWithImei = cart
+        .where(
+          (cartProduct) => cartProduct.product.rimei == true,
+        )
+        .toList();
 
-    for (CartProductEntity cartProductEntity in productsWithImei){
-      List<ImeiProductEntity> newList = List.generate(cartProductEntity.quantity, (index) {
-        return ImeiProductEntity(cartProductEntity: cartProductEntity, imeiController: TextEditingController());
-      },);
+    for (CartProductEntity cartProductEntity in productsWithImei) {
+      List<ImeiProductEntity> newList = List.generate(
+        cartProductEntity.quantity,
+        (index) {
+          return ImeiProductEntity(
+              cartProductEntity: cartProductEntity,
+              imeiController: TextEditingController());
+        },
+      );
       imeiProductEntities.addAll(newList);
     }
 
     imeiProductEntitiesCart = imeiProductEntities;
 
     return imeiProductEntities;
-
   }
 
   Future<void> verifyImei() async {
-
-    for (CartProductEntity cartProductEntity in cart){
+    for (CartProductEntity cartProductEntity in cart) {
       cartProductEntity.imeiList.clear();
     }
 
-    for (ImeiProductEntity imeiProductEntity in imeiProductEntitiesCart){
-
-      Either<Failure, bool> usecase = await productRepository.verifyImei(imeiProductEntity.cartProductEntity.product.name, imeiProductEntity.imeiController.text, branchProvider.branch!.nombre);
+    for (ImeiProductEntity imeiProductEntity in imeiProductEntitiesCart) {
+      Either<Failure, bool> usecase = await productRepository.verifyImei(
+          imeiProductEntity.cartProductEntity.product.name,
+          imeiProductEntity.imeiController.text,
+          branchProvider.branch!.nombre);
 
       usecase.fold(
-        (l) {
-
-        },
+        (l) {},
         (boolValue) {
-
-
           if (boolValue) {
-
             int index = cart.indexOf(imeiProductEntity.cartProductEntity);
             imeiProductEntity.error = false;
             cart[index].imeiList.add(imeiProductEntity.imeiController.text);
-
           } else {
-
             int index = cart.indexOf(imeiProductEntity.cartProductEntity);
             cart[index].imeiList.clear();
             imeiProductEntity.error = true;
-
           }
-
         },
       );
 
       notifyListeners();
-
     }
-
   }
-
 
   /// PRODUCTOS
 
-  Future<Either<String, String>> addProduct(ProductEntity tempProduct, String sucursal) async {
-
-    Either<Failure, int> usecase = await productRepository.checkStock(tempProduct.name, sucursal);
+  Future<Either<String, String>> addProduct(
+      ProductEntity tempProduct, String sucursal) async {
+    Either<Failure, int> usecase =
+        await productRepository.checkStock(tempProduct.name, sucursal);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (stock) {
+        int index = cart.indexWhere(
+          (cartProduct) => cartProduct.product == tempProduct,
+        );
 
-        int index = cart.indexWhere((cartProduct) => cartProduct.product == tempProduct,);
-
-
-
-        if (index != -1){
-
+        if (index != -1) {
           if (cart[index].quantity < stock) {
             cart[index].quantity += 1;
             getCartsWithImeiApply();
@@ -185,19 +190,18 @@ class CartState extends ChangeNotifier {
           }
 
           return const Left("Sin suficiente stock");
-
         }
 
         // Si no se encuentra el producto dentro del carrito
         // se agrega un nuevo producto
 
-        CartProductEntity cartProductEntity = CartProductEntity(product: tempProduct, quantity: 1, imeiList: []);
+        CartProductEntity cartProductEntity =
+            CartProductEntity(product: tempProduct, quantity: 1, imeiList: []);
         cart.add(cartProductEntity);
         getCartsWithImeiApply();
 
         calculateTotal();
         return const Right("Agregado Correctamente");
-
       },
     );
   }
@@ -209,88 +213,106 @@ class CartState extends ChangeNotifier {
   }
 
   void calculateTotal() {
-
-    total = cart.fold(0, (previousValue, element) => (element.quantity * element.product.price) + previousValue,);
+    total = cart.fold(
+      0,
+      (previousValue, element) =>
+          (element.quantity * element.product.price) + previousValue,
+    );
 
     notifyListeners();
-
   }
-
 
   /// VENTA
   Future<Either<String, String>> purchase(idCorte, usuario, sucursal) async {
-
     VentaRequest ventaRequest = VentaRequest(
-      total: cartPaymentType!.enumType != PaymentTypes.normal ? double.parse(creditEnchangeController.text) : total,
+      total: cartPaymentType!.enumType != PaymentTypes.normal
+          ? double.parse(creditEnchangeController.text)
+          : total,
       metodo: _cartMethodPayEntity!.name,
       sucursal: sucursal,
       usuario: usuario,
       idCorte: idCorte,
-      credito: cartPaymentType!.enumType != PaymentTypes.normal ? cartPaymentType!.name : "No",
-      nombres: cart.map((e) => e.product.name,).toList(),
-      cantidades: cart.map((e) => e.quantity,).toList(),
-      imeis: cart.expand((element) => element.imeiList,).toList(),
-      nombreC: cartPaymentType!.enumType != PaymentTypes.normal ? creditNameController.text : null,
-      telefonoC: cartPaymentType!.enumType != PaymentTypes.normal ? creditPhoneController.text : null,
-      domicilioC: cartPaymentType!.enumType != PaymentTypes.normal ? creditAddressController.text : null,
+      credito: cartPaymentType!.enumType != PaymentTypes.normal
+          ? cartPaymentType!.name
+          : "No",
+      nombres: cart
+          .map(
+            (e) => e.product.name,
+          )
+          .toList(),
+      cantidades: cart
+          .map(
+            (e) => e.quantity,
+          )
+          .toList(),
+      imeis: cart
+          .expand(
+            (element) => element.imeiList,
+          )
+          .toList(),
+      nombreC: cartPaymentType!.enumType != PaymentTypes.normal
+          ? creditNameController.text
+          : null,
+      telefonoC: cartPaymentType!.enumType != PaymentTypes.normal
+          ? creditPhoneController.text
+          : null,
+      domicilioC: cartPaymentType!.enumType != PaymentTypes.normal
+          ? creditAddressController.text
+          : null,
     );
 
-    Either<Failure,VentaResponse> usecase = await productRepository.generarVenta(ventaRequest);
+    Either<Failure, VentaResponse> usecase =
+        await productRepository.generarVenta(ventaRequest);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (ventaResponse) async {
         // Generar entidad de ticket
         TicketEntity ticketEntity = TicketEntity(
-          sucursal: sucursal,
-          total: cartPaymentType!.enumType != PaymentTypes.normal ? double.parse(creditEnchangeController.text) : total,
-          ventaResponse: ventaResponse,
-          cart: cart,
-          supplierName: usuario,
-          paguitos: cartPaymentType!.enumType != PaymentTypes.normal ? true : false
-        );
+            sucursal: sucursal,
+            total: cartPaymentType!.enumType != PaymentTypes.normal
+                ? double.parse(creditEnchangeController.text)
+                : total,
+            ventaResponse: ventaResponse,
+            cart: cart,
+            supplierName: usuario,
+            paguitos: cartPaymentType!.enumType != PaymentTypes.normal
+                ? true
+                : false);
         // Guardar Ticket
         Uint8List ticketPdf = await generarPdfTicketVenta(ticketEntity);
 
-        // TODO: LIBERAR IMPRESIONES
-        if (sucursal == "VELCEL AVENTA") {
-          // Imprimir ticket
-          final result = await printerRepository.printPdf(ticketEntity);
-          result.fold(
-            (l) {
-              print("HUBO FALLO EN LA IMPRESION");
-              print(l);
-            },
-            (r) {
-              print("HUBO EXITO EN LA IMPRESION");
-              print(r);
-            },
-          );
-        }
+        // Impresora Liberada
+        final result = await printerRepository.printPdf(ticketEntity);
+        result.fold(
+          (l) {
+            print("HUBO FALLO EN LA IMPRESION");
+            print(l);
+          },
+          (r) {
+            print(r);
+          },
+        );
+
         // limpiar carrito y notificar
         clearAll();
         // retornar mensaje de éxito
         return const Right("Venta creada con éxito");
       },
     );
-
   }
 
-  void clearAll(){
+  void clearAll() {
     cart.clear();
     imeiProductEntitiesCart.clear();
     creditNameController.text = "";
     creditPhoneController.text = "";
     creditAddressController.text = "";
-    creditEnchangeController.text= "";
+    creditEnchangeController.text = "";
     cartPaymentType = null;
     cartMethodPayEntity = null;
     selectedProduct = null;
     calculateTotal();
     cartState = CartStates.cart;
   }
-
-
-
 }
-

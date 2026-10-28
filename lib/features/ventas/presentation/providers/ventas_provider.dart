@@ -9,7 +9,6 @@ import '../../domain/repositories/ventas_repository.dart';
 import '../../domain/usecases/get_detail_report_with_folio_usecase.dart';
 
 class VentasProvider extends ChangeNotifier {
-
   VentasRepository ventasRepository;
   GetDetailReportWithFolioUsecase getDetailReportWithFolioUsecase;
 
@@ -18,47 +17,68 @@ class VentasProvider extends ChangeNotifier {
     required this.getDetailReportWithFolioUsecase,
   });
 
-  Future<Either<String, List<SemiReporteVentaEntity>>> getSemiReportsWithFolio(String sucursal, int folio) async {
-
-    final usecase = await ventasRepository.getReportesWithFolio(sucursal, folio);
-
-    return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
-      (r) => Right(r),
-    );
-
-  }
-
-  Future<Either<String, List<SemiReporteVentaEntity>>> getSemiReportsWithDate(String sucursal, DateTime fechaA, DateTime fechaB) async {
-
-    final usecase = await ventasRepository.getReportesWithDate(sucursal, fechaA, fechaB);
+  Future<Either<String, List<SemiReporteVentaEntity>>> getSemiReportsWithFolio(
+      String sucursal, int folio) async {
+    final usecase =
+        await ventasRepository.getReportesWithFolio(sucursal, folio);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) => Right(r),
     );
-
   }
 
-  Future<Either<String, List<CorteEntity>>> getCortesWithDate(DateTime initDate, DateTime endDate, String branch) async {
-
-    final usecase = await ventasRepository.getCortesWithFecha(branch, initDate, endDate);
+  Future<Either<String, List<SemiReporteVentaEntity>>> getSemiReportsWithDate(
+      String sucursal, DateTime fechaA, DateTime fechaB) async {
+    final usecase =
+        await ventasRepository.getReportesWithDate(sucursal, fechaA, fechaB);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) => Right(r),
     );
-
   }
 
-  Future<Either<String, ReporteVentaEntity>> getDetailReportWithFolio(int folio, String credito) async {
+  Future<Either<String, List<SemiReporteVentaEntity>>>
+      getSemiReportsWithFilters({
+    required String sucursal,
+    int? folio,
+    int? folioCorte,
+    required DateTime fechaA,
+    required DateTime fechaB,
+  }) async {
+    final response = await ventasRepository.getReportesWithFilters(
+      sucursal: sucursal,
+      folio: folio,
+      folioCorte: folioCorte,
+      fechaA: fechaA,
+      fechaB: fechaB,
+    );
+
+    return response.fold(
+      (l) => Left((l as ServerFailure).message),
+      (r) => Right(r),
+    );
+  }
+
+  Future<Either<String, List<CorteEntity>>> getCortesWithDate(
+      DateTime initDate, DateTime endDate, String branch) async {
+    final usecase =
+        await ventasRepository.getCortesWithFecha(branch, initDate, endDate);
+
+    return usecase.fold(
+      (l) => Left((l as ServerFailure).message),
+      (r) => Right(r),
+    );
+  }
+
+  Future<Either<String, ReporteVentaEntity>> getDetailReportWithFolio(
+      int folio, String credito) async {
     final usecase = await getDetailReportWithFolioUsecase(folio, credito);
 
     return usecase.fold(
       (l) => Left((l as ServerFailure).message),
       (r) => Right(r),
     );
-
   }
-
 }

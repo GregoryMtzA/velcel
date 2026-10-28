@@ -15,15 +15,13 @@ import 'package:velcel/features/ventas/domain/entities/semi_reporte_venta_entity
 import 'package:velcel/features/ventas/domain/repositories/ventas_repository.dart';
 
 class VentasRepositoryImpl implements VentasRepository {
-
   final Future<MySqlConnection> Function() createConnection;
 
   VentasRepositoryImpl({
     required this.createConnection,
   });
 
-
-  String fechaFormateada(DateTime fecha){
+  String fechaFormateada(DateTime fecha) {
     return DateFormat('yyyy-MM-dd').format(fecha.toUtc());
   }
 
@@ -32,149 +30,189 @@ class VentasRepositoryImpl implements VentasRepository {
     final mysql = await createConnection();
     try {
       List<ImeisVentaEntity> imeis = [];
-      
-      Results results = await mysql.query('''SELECT imei FROM imeisventas WHERE folio=?''', [folio]);
+
+      Results results = await mysql
+          .query('''SELECT imei FROM imeisventas WHERE folio=?''', [folio]);
 
       for (var result in results) {
-        ImeisVentaEntity imeisVentaEntity = ImeisVentaModel.fromJson(result.fields);
-        imeis.add(imeisVentaEntity);
+        final rawImei = result['imei'];
+        if (rawImei == null) continue;
+
+        final imei = rawImei.toString().trim();
+        if (imei.isEmpty) continue;
+
+        imeis.add(ImeisVentaModel(imei: imei));
       }
 
       return Right(imeis);
-
-    } on MySqlConnection catch(e) {
-
+    } on MySqlException catch (e) {
       return Left(ServerFailure(message: "Contacte a soporte"));
-
     } finally {
       await mysql.close();
     }
-
-
   }
 
   @override
-  Future<Either<Failure, List<ClientesVentaEntity>>> getClientes(int folio) async {
+  Future<Either<Failure, List<ClientesVentaEntity>>> getClientes(
+      int folio) async {
     final mysql = await createConnection();
     try {
+      List<ClientesVentaEntity> clientes = [];
 
-      List<ClientesVentaEntity> clientes = [] ;
-
-      Results results = await mysql.query('''SELECT nombre, domicilio, telefono FROM registropayjoy WHERE folio=?''', [folio]);
+      Results results = await mysql.query(
+          '''SELECT nombre, domicilio, telefono FROM registropayjoy WHERE folio=?''',
+          [folio]);
 
       for (var result in results) {
-        ClientesVentaEntity cliente = ClientesVentaModel.fromJson(result.fields);
+        ClientesVentaEntity cliente =
+            ClientesVentaModel.fromJson(result.fields);
         clientes.add(cliente);
       }
 
       return Right(clientes);
-
     } on MySqlException catch (e) {
-
       print(e.message);
       return Left(ServerFailure(message: "ERROR AL OBTENER EL CLIENTE"));
-
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<ProductosVentaEntity>>> getProductos(int folio) async {
+  Future<Either<Failure, List<ProductosVentaEntity>>> getProductos(
+      int folio) async {
     final mysql = await createConnection();
     try {
-
       List<ProductosVentaEntity> productos = [];
-      
+
       Results results = await mysql.query(
-        '''SELECT productos.nombre, salidasventas.cantidad FROM productos join salidasventas ON productos.nombre = salidasventas.nombre WHERE salidasventas.folio=?''',
-        [folio]
-      );
+          '''SELECT productos.nombre, salidasventas.cantidad FROM productos join salidasventas ON productos.nombre = salidasventas.nombre WHERE salidasventas.folio=?''',
+          [folio]);
 
       for (var result in results) {
-        ProductosVentaEntity producto = ProductosVentaModel.fromJson(result.fields);
+        ProductosVentaEntity producto =
+            ProductosVentaModel.fromJson(result.fields);
         productos.add(producto);
       }
 
       return Right(productos);
-      
-    } on MySqlException catch(e) {
-      
+    } on MySqlException catch (e) {
       return Left(ServerFailure(message: "Contacte a soporte"));
-      
     } finally {
       await mysql.close();
     }
-    
   }
 
   @override
-  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithDate(String sucursal, DateTime fechaA, DateTime fechaB) async {
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithDate(
+      String sucursal, DateTime fechaA, DateTime fechaB) async {
     final mysql = await createConnection();
     try {
-
       String fechaAFormatted = fechaFormateada(fechaA);
       String fechaBFormatted = fechaFormateada(fechaB);
 
       List<SemiReporteVentaEntity> semiReportes = [];
 
       Results results = await mysql.query(
-        '''SELECT folio, total, metodo, credito, fecha, usuario FROM reportesventas WHERE (fecha BETWEEN ? AND ?) AND sucursal=?''',
-        [fechaAFormatted, fechaBFormatted, sucursal]
-      );
+          '''SELECT folio, total, metodo, credito, fecha, usuario FROM reportesventas WHERE (fecha BETWEEN ? AND ?) AND sucursal=?''',
+          [fechaAFormatted, fechaBFormatted, sucursal]);
 
-      for (var result in results){
-        SemiReporteVentaEntity semiReporte = SemiReporteVentaModel.fromJson(result.fields);
+      for (var result in results) {
+        SemiReporteVentaEntity semiReporte =
+            SemiReporteVentaModel.fromJson(result.fields);
         semiReportes.add(semiReporte);
       }
 
       return Right(semiReportes);
-
-    } on MySqlException catch(e) {
-
+    } on MySqlException catch (e) {
       return Left(ServerFailure(message: "Contacte a soporte"));
-
     } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFolio(String sucursal, int folio) async {
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFolio(
+      String sucursal, int folio) async {
     final mysql = await createConnection();
     try {
-
       List<SemiReporteVentaEntity> semiReportes = [];
 
       Results results = await mysql.query(
           '''SELECT folio, total, metodo, credito, fecha, usuario FROM reportesventas where sucursal=? AND folio=?''',
-          [sucursal, folio]
-      );
+          [sucursal, folio]);
 
-      for (var result in results){
-        SemiReporteVentaEntity semiReporte = SemiReporteVentaModel.fromJson(result.fields);
+      for (var result in results) {
+        SemiReporteVentaEntity semiReporte =
+            SemiReporteVentaModel.fromJson(result.fields);
         semiReportes.add(semiReporte);
       }
 
       return Right(semiReportes);
-
-    } on MySqlException catch(e) {
-
+    } on MySqlException catch (e) {
       return Left(ServerFailure(message: "Contacte a soporte"));
-
-    } finally{
+    } finally {
       await mysql.close();
     }
-
   }
 
   @override
-  Future<Either<Failure, List<CorteEntity>>> getCortesWithFecha(String sucursal, DateTime fechaA, DateTime fechaB) async {
+  Future<Either<Failure, List<SemiReporteVentaEntity>>> getReportesWithFilters({
+    required String sucursal,
+    int? folio,
+    int? folioCorte,
+    required DateTime fechaA,
+    required DateTime fechaB,
+  }) async {
     final mysql = await createConnection();
     try {
+      final conditions = <String>['sucursal=?'];
+      final parameters = <Object?>[sucursal];
 
+      if (folio != null) {
+        conditions.add('folio=?');
+        parameters.add(folio);
+      }
+
+      if (folioCorte != null) {
+        conditions.add('folioCorte=?');
+        parameters.add(folioCorte);
+      }
+
+      if (folio == null && folioCorte == null) {
+        conditions.add('(fecha BETWEEN ? AND ?)');
+        parameters.addAll([
+          fechaFormateada(fechaA),
+          fechaFormateada(fechaB),
+        ]);
+      }
+
+      final results = await mysql.query(
+        '''SELECT folio, total, metodo, credito, fecha, usuario
+           FROM reportesventas
+           WHERE ${conditions.join(' AND ')}''',
+        parameters,
+      );
+
+      final semiReportes = results
+          .map<SemiReporteVentaEntity>(
+            (result) => SemiReporteVentaModel.fromJson(result.fields),
+          )
+          .toList();
+
+      return Right(semiReportes);
+    } on MySqlException catch (_) {
+      return Left(ServerFailure(message: 'Contacte a soporte'));
+    } finally {
+      await mysql.close();
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<CorteEntity>>> getCortesWithFecha(
+      String sucursal, DateTime fechaA, DateTime fechaB) async {
+    final mysql = await createConnection();
+    try {
       String fechaAFormatted = fechaFormateada(fechaA);
       String fechaBFormatted = fechaFormateada(fechaB);
 
@@ -182,24 +220,18 @@ class VentasRepositoryImpl implements VentasRepository {
 
       Results results = await mysql.query(
           '''SELECT usuario, fechaapertura, fechacierre, cantidadefectivo, cantidadtarjeta, fondo, gastos, total, totalconteo, diferencia FROM cortes WHERE (fechaapertura BETWEEN ? AND ?) AND sucursal=? AND estado=?''',
-          [fechaAFormatted, fechaBFormatted, sucursal, "Cerrado"]
-      );
+          [fechaAFormatted, fechaBFormatted, sucursal, "Cerrado"]);
 
-      for (var result in results){
+      for (var result in results) {
         CorteEntity corte = CorteModel.fromJson(result.fields);
         cortes.add(corte);
       }
 
       return Right(cortes);
-
-    } on MySqlException catch(e) {
-
+    } on MySqlException catch (e) {
       return Left(ServerFailure(message: "Contacte a soporte"));
-
-    } finally{
+    } finally {
       await mysql.close();
     }
-
   }
-
 }

@@ -1,51 +1,197 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:velcel/core/app/navigation.dart';
 
 import '../../../widgets/menu_drawer.dart';
-import '../widgets/rounded_button_service.dart';
 import 'order_service_screen.dart';
 import 'view_services_screen.dart';
 
 class HomeServiceScreen extends StatelessWidget {
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   HomeServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Scaffold(
       key: _scaffoldKey,
-      drawer: MenuDrawer(),
+      drawer: const MenuDrawer(selected: MenuDestination.services),
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          icon: Icon(Icons.menu_outlined),
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          'Servicios',
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: colors.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: NavigationService.appBarLeading(
+          context,
+          onMenu: () => _scaffoldKey.currentState?.openDrawer(),
         ),
       ),
-      body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            RoundedButtonService(
-              text: "Crear Orden",
-              icon: Icons.design_services_outlined,
-              onTap: () async => NavigationService.navigate(context, OrderServiceScreen()),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 820;
+            final horizontalPadding = constraints.maxWidth >= 900 ? 32.0 : 20.0;
+            const verticalPadding = 24.0;
+            final availableHeight = constraints.maxHeight - verticalPadding * 2;
+            final availableWidth = constraints.maxWidth - horizontalPadding * 2;
+            final double cardSize = (isWide
+                    ? ((availableWidth - 24) / 2).clamp(0.0, 420.0)
+                    : availableWidth.clamp(0.0, 340.0))
+                .toDouble();
+
+            final actions = [
+              _actionCard(
+                context,
+                asset: 'assets/lotties/10_working.json',
+                title: 'Crear orden',
+                description: 'Registra un equipo y los datos de atención.',
+                semanticLabel: 'Crear una orden de servicio',
+                size: cardSize,
+                onTap: () => NavigationService.navigate(
+                  context,
+                  OrderServiceScreen(),
+                ),
+              ),
+              _actionCard(
+                context,
+                asset: 'assets/lotties/05_dataanalytics.json',
+                title: 'Consultar servicios',
+                description: 'Revisa las órdenes y su estado actual.',
+                semanticLabel: 'Consultar servicios',
+                size: cardSize,
+                onTap: () => NavigationService.navigate(
+                  context,
+                  const ViewServicesScreen(),
+                ),
+              ),
+            ];
+
+            final content = isWide
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      actions[0],
+                      const SizedBox(width: 24),
+                      actions[1],
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      actions[0],
+                      const SizedBox(height: 16),
+                      actions[1],
+                    ],
+                  );
+
+            final scrollContent = isWide
+                ? ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: availableHeight > 0 ? availableHeight : 0,
+                    ),
+                    child: Center(child: content),
+                  )
+                : Align(
+                    alignment: Alignment.topCenter,
+                    child: content,
+                  );
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                verticalPadding,
+                horizontalPadding,
+                verticalPadding,
+              ),
+              child: scrollContent,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _actionCard(
+    BuildContext context, {
+    required String asset,
+    required String title,
+    required String description,
+    required String semanticLabel,
+    required double size,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return SizedBox.square(
+      dimension: size,
+      child: Semantics(
+        button: true,
+        label: semanticLabel,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            onTap: onTap,
+            mouseCursor: SystemMouseCursors.click,
+            borderRadius: BorderRadius.circular(10),
+            child: Ink(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: colors.outlineVariant),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: SizedBox(
+                      height: size * 0.44,
+                      child: Lottie.asset(
+                        asset,
+                        fit: BoxFit.contain,
+                        repeat: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colors.onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.outline,
+                    ),
+                  ),
+                ],
+              ),
             ),
-
-            const SizedBox(width: 25,),
-
-            RoundedButtonService(
-              text: "Ver Servicios",
-              icon: Icons.home_repair_service_outlined,
-              onTap: () async => NavigationService.navigate(context, ViewServicesScreen()),
-            ),
-
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
-

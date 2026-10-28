@@ -1,95 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:issel_code_widgets/issel_code_widgets.dart';
 import 'package:lottie/lottie.dart';
 
-import '../../../../../widgets/buton_app.dart';
-
 class FirstPage extends StatelessWidget {
-
-  VoidCallback onTap;
-
-  FirstPage({
+  const FirstPage({
     super.key,
     required this.onTap,
   });
 
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(
-      builder: (context, orientation) => orientation == Orientation.portrait
-        ? _portraitWidget(context)
-        : _landscapeWidget(context)
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const verticalPadding = 24.0;
+        final horizontalPadding = constraints.maxWidth >= 900 ? 32.0 : 20.0;
+        final minHeight = (constraints.maxHeight - verticalPadding * 2)
+            .clamp(0.0, double.infinity)
+            .toDouble();
+        final isWide = constraints.maxWidth >= 780;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minHeight),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: isWide
+                    ? IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(child: _illustration(context)),
+                            const SizedBox(width: 28),
+                            Expanded(child: _welcomeContent(context)),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _illustration(context),
+                          const SizedBox(height: 12),
+                          _welcomeContent(context),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _portraitWidget(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-      child: Column(
-        children: [
-
-          /// Lottie
-          Lottie.asset('assets/lotties/location.json', width: 500),
-
-          /// Text
-          Text("VelCel App", style: Theme.of(context).textTheme.titleLarge,),
-
-          const SizedBox(height: 20,),
-
-          Text("Selecciona la sucursal", style: Theme.of(context).textTheme.bodySmall,),
-
-          const SizedBox(height: 50,),
-
-          /// Button
-          ButtonApp(
-            text: "Seleccionar",
-            onTap: () async {
-              onTap();
-            },
-          )
-
-        ],
+  Widget _illustration(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 360),
+        child: Lottie.asset(
+          'assets/lotties/location.json',
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }
 
-  Widget _landscapeWidget(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-      child: Row(
-        children: [
+  Widget _welcomeContent(BuildContext context) {
+    final theme = Theme.of(context);
 
-          /// Lottie
-          Lottie.asset('assets/lotties/location.json', width: 500),
-
-          const SizedBox(width: 50,),
-
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                /// Text
-                Text("VelCel App", style: Theme.of(context).textTheme.titleLarge,),
-
-                const SizedBox(height: 20,),
-
-                Text("Selecciona la sucursal", style: Theme.of(context).textTheme.bodySmall,),
-
-                const SizedBox(height: 50,),
-
-                /// Button
-                ButtonApp(
-                  text: "Seleccionar",
-                  onTap: () async {
-                    onTap();
-                  },
-                )
-              ],
-            )
-          )
-
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Selecciona la sucursal para comenzar.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.onSurface,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 24),
+        IsselButton(
+          text: 'Seleccionar sucursal',
+          height: 56,
+          onTap: onTap,
+        ),
+      ],
     );
   }
-
 }

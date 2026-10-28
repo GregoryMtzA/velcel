@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:issel_code_widgets/issel_code_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:velcel/core/app/theme.dart';
 import 'package:velcel/dependency_injections/inject_container.dart';
@@ -45,20 +46,28 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ServicesProvider(servicesRepository: locator()),),
         ChangeNotifierProvider(create: (context) => InventoryProvider(inventoryRepository: locator(), branchProvider: context.read())),
       ],
-      child: MaterialApp(
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        locale: Locale('es', ''),
-        supportedLocales: const [
-          Locale('es', ''),
-        ],
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: lightTheme,
-        home: SplashScreen.init(context)
+      child: AnimatedBuilder(
+        animation: locator<IsselThemeController>(),
+        builder: (context, child) {
+          return MaterialApp(
+              localizationsDelegates: [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              locale: Locale('es', ''),
+
+              supportedLocales: const [
+                Locale('es', ''),
+              ],
+              debugShowCheckedModeBanner: false,
+              title: 'Flutter Demo',
+              theme: locator<IsselThemeController>().lightTheme,
+              darkTheme: locator<IsselThemeController>().darkTheme,
+              themeMode: locator<IsselThemeController>().themeMode,
+              home: SplashScreen.init(context)
+          );
+        },
       ),
     );
   }

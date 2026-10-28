@@ -8,7 +8,6 @@ import '../../domain/repositories/gastos_repository.dart';
 import '../../domain/usecases/crear_gasto_usecase.dart';
 
 class GastosProvider extends ChangeNotifier {
-
   GastosRepository gastosRepository;
   CrearGastoUsecase crearGastoUsecase;
 
@@ -21,58 +20,56 @@ class GastosProvider extends ChangeNotifier {
   List<GastoEntity> gastos = [];
 
   Future<Either<String, List<TipoGastoEntity>>> getTiposGastos() async {
-
-    Either<Failure, List<TipoGastoEntity>> usecase = await gastosRepository.GetAllTipoGastos();
+    Either<Failure, List<TipoGastoEntity>> usecase =
+        await gastosRepository.GetAllTipoGastos();
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) {
         tiposGastos = r;
         return Right(tiposGastos);
       },
     );
-
   }
 
-  Future<Either<String, List<GastoEntity>>> getGastosPorTipo(String tipo, String sucursal) async {
-
-    Either<Failure, List<GastoEntity>> usecase = await gastosRepository.obtenerGastosPorTipo(tipo, sucursal);
+  Future<Either<String, List<GastoEntity>>> getGastosPorTipo(
+      String tipo, String sucursal) async {
+    Either<Failure, List<GastoEntity>> usecase =
+        await gastosRepository.obtenerGastosPorTipo(tipo, sucursal);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) {
         gastos = r;
         notifyListeners();
         return Right(gastos);
       },
     );
-
   }
 
-  Future<Either<String, List<GastoEntity>>> getGastosPorFolio(int folio, String sucursal) async {
-
-    Either<Failure, List<GastoEntity>> usecase = await gastosRepository.obtenerGastosPorFolio(folio, sucursal);
+  Future<Either<String, List<GastoEntity>>> getGastosPorFolioCorte(
+      int folioCorte, String sucursal) async {
+    Either<Failure, List<GastoEntity>> usecase =
+        await gastosRepository.obtenerGastosPorFolioCorte(folioCorte, sucursal);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) {
         gastos = r;
         notifyListeners();
         return Right(gastos);
       },
     );
-
   }
 
-  Future<Either<String, void>> crearGasto(int folio, String sucursal, int corte, String usuario, double importe, String tipo) async {
-
-    final usecase = await crearGastoUsecase(folio, sucursal, corte, usuario, importe, tipo);
+  Future<Either<String, void>> crearGasto(String sucursal, int corte,
+      String usuario, double importe, String tipo) async {
+    final usecase =
+        await crearGastoUsecase(sucursal, corte, usuario, importe, tipo);
 
     return usecase.fold(
-      (l) => Left( (l as ServerFailure).message ),
+      (l) => Left((l as ServerFailure).message),
       (r) => Right(r),
     );
-
   }
-
 }

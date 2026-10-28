@@ -1,19 +1,18 @@
 import 'package:equatable/equatable.dart';
 
-class GastoEntity extends Equatable{
+class GastoEntity extends Equatable {
+  final int folio;
   final String tipoGasto;
   final double importe;
   final DateTime fecha;
-  final int? folioVentas;
 
   GastoEntity({
+    required this.folio,
     required this.tipoGasto,
     required this.importe,
     required this.fecha,
-    this.folioVentas,
   });
 
   @override
-  List<Object?> get props => [tipoGasto, importe, fecha, folioVentas];
-
+  List<Object?> get props => [folio, tipoGasto, importe, fecha];
 }
